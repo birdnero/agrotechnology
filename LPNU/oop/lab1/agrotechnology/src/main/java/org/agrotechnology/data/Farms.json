@@ -1,0 +1,105 @@
+[
+  {
+    "barn": {
+      "type": {
+        "price": 6,
+        "Products": [
+          "ChikenMeat"
+        ],
+        "canEat": [
+          "Corn",
+          "Wheat",
+          "Millet",
+          "Rye"
+        ],
+        "name": "Chiken",
+        "life": 0.25
+      },
+      "size": 245,
+      "animalsAmount": 158,
+      "feedAmount": 0,
+      "productionAmount": 599
+    },
+    "type": "AnimalFarm",
+    "location": "My fucking farm",
+    "name": "my fucking room",
+    "wareHouse": {
+      "location": "my fucking room",
+      "size": 340,
+      "capacity": 237,
+      "name": "fuck",
+      "freshness": 0.6699999999999997,
+      "storage": [
+        {
+          "type": "ChikenMeat",
+          "amount": 237
+        }
+      ]
+    },
+    "workers": [
+      {
+        "position": "Farm Manager",
+        "expirience": 9,
+        "salary": 40130,
+        "duty": "Implementing irrigation systems",
+        "workPlace": "My fucking farm",
+        "birthDay": "11/03/1986",
+        "sex": "FEMALE",
+        "fullName": "Henry Murphy"
+      },
+      {
+        "position": "Livestock Manager",
+        "expirience": 9,
+        "salary": 73381,
+        "duty": "Testing soil quality",
+        "workPlace": "My fucking farm",
+        "birthDay": "07/09/2000",
+        "sex": "FEMALE",
+        "fullName": "Liam Carter"
+      }
+    ]
+  },
+  {
+    "barn": {
+      "type": {
+        "price": 13,
+        "Products": [
+          "slave meat"
+        ],
+        "canEat": [
+          "Wheat",
+          "Grass"
+        ],
+        "name": "Student SHI",
+        "life": 0.04
+      },
+      "size": 56,
+      "animalsAmount": 0,
+      "feedAmount": 0,
+      "productionAmount": 0
+    },
+    "type": "AnimalFarm",
+    "location": "FIRST WORKING FARM",
+    "name": "анус Вадима",
+    "wareHouse": {
+      "location": "VADIK`s ASS",
+      "size": 6000,
+      "capacity": 0,
+      "name": "MY DICK",
+      "freshness": 0.6499999999999997,
+      "storage": []
+    },
+    "workers": [
+      {
+        "position": "Irrigation Specialist",
+        "expirience": 9,
+        "salary": 77310,
+        "duty": "Overseeing feed and nutrition",
+        "workPlace": "FIRST WORKING FARM",
+        "birthDay": "17/09/1992",
+        "sex": "FEMALE",
+        "fullName": "Chloe Parker"
+      }
+    ]
+  }
+]

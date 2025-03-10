@@ -26,10 +26,13 @@ import com.google.gson.reflect.TypeToken;
 
 public final class DataManager {
     private Gson gson;
+    private static final Path farmsPath = Paths.get("src/main/java/org/agrotechnology/data/Farms.json"); // ? шлях через Path, бо це шлях незалежний від файлової системи
 
     public DataManager() {
         this.gson = new GsonBuilder() //? ця штука дозволяє десеріалізувати з розтипізацією на plantFarm & AnimalFarm з Farm
                 .registerTypeAdapter(Farm.class, new FarmDeserializer())
+                .excludeFieldsWithoutExposeAnnotation()
+                .setPrettyPrinting()
                 .create();
     }
 
@@ -46,9 +49,9 @@ public final class DataManager {
             JsonObject jsonObject = json.getAsJsonObject(); // ? просто перетворює у пари ключ значення
             String type = jsonObject.get("type").getAsString(); // ? логічно
 
-            if (type.equals("animals")) {
+            if (type.equals(AnimalFarm.class.getSimpleName())) {
                 return gson.fromJson(json, AnimalFarm.class); // ? перетворює в об'єкт потрібного класу
-            } else if (type.equals("plant")) {
+            } else if (type.equals(PlantFarm.class.getSimpleName())) {
                 return gson.fromJson(json, PlantFarm.class);// ? знову
             }
 
@@ -59,36 +62,38 @@ public final class DataManager {
     }
 
     public List<Farm> loadFarms() {
-        Path path = Paths.get("./data/Farms.json"); // ? шлях через Path, бо це шлях незалежний від файлової системи
 
         try {
-            if (Files.notExists(path)) { // ? якщо файлу не існує
-                Files.createDirectories(path.getParent());// ? створити потрібну папку
-                Files.createFile(path);// ? створити потрібний файл
-                Files.writeString(path, "[]");// ? і засунути туди файл
+            if (Files.notExists(farmsPath)) { // ? якщо файлу не існує
+                Files.createDirectories(farmsPath.getParent());// ? створити потрібну папку
+                Files.createFile(farmsPath);// ? створити потрібний файл
+                Files.writeString(farmsPath, "[]");// ? і засунути туди файл
             }
         } catch (IOException e) {
-            terminal.errorExit("Smth wrong with loadFarms file creation");
+            terminal.errorExit("Smth wrong with loadFarms file creation " + e);
         }
 
         // ? конструкція яка автоматично закриє файл і тд. короче корисно
-        try (FileReader file = new FileReader(path.toFile())) {
+        try (FileReader file = new FileReader(farmsPath.toFile())) {
 
             Type typeForFarms = new TypeToken<List<Farm>>() {
             }.getType();// ? дивна штука яка правильно (за версією chatGPT) типізує json файл
 
             ArrayList<Farm> farms = this.gson.fromJson(file, typeForFarms);
+            for (Farm farm : farms) {
+                farm.initProcess();
+            }
             return farms;
 
         } catch (IOException e) {
-            terminal.errorExit("DataManager Farms error");
+            terminal.errorExit("DataManager Farms error " + e);
+            System.exit(0);
         }
         return null;
     }
 
     public void syncFarms(List<Farm> farms) {
-        Path path = Paths.get("./data/Farms.json");
-        try (FileWriter file = new FileWriter(path.toFile())) {
+        try (FileWriter file = new FileWriter(farmsPath.toFile())) {
             gson.toJson(farms, file);
         } catch (IOException e) {
             terminal.errorExit("sync farms error");

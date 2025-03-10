@@ -2,14 +2,14 @@ package org.agrotechnology.Farm;
 
 import java.util.ArrayList;
 
-import org.agrotechnology.FarmAdditional.Kennel;
 import org.agrotechnology.FarmProperty.Barn.Barn;
 import org.agrotechnology.WareHouse.WareHouse;
 import org.agrotechnology.Worker.Worker;
 
-public class AnimalFarm extends Farm {
+import com.google.gson.annotations.Expose;
 
-    protected Kennel petHouse;// ? Kennel - place for dog
+public class AnimalFarm extends Farm {
+    @Expose
     private Barn barn;
 
     /**
@@ -17,7 +17,6 @@ public class AnimalFarm extends Farm {
      * 
      * @param name      - ім'я ферми
      * @param location  - локація
-     * @param size      - розмір (m²)
      * @param wareHouse - склад (створити і передати)
      * @param workers   - працівники (передати власно створений ArrayList або
      *                  WorkerUtil.workerArrGenerator)
@@ -28,21 +27,28 @@ public class AnimalFarm extends Farm {
     public AnimalFarm(
             String name,
             String location,
-            int size,
             WareHouse wareHouse,
             ArrayList<Worker> workers,
             /////////////////////////
-            Kennel petHouse,
             Barn barn) { // ? Barn - place for animals
 
-        super(name, location, size, wareHouse, workers);
+        super(AnimalFarm.class.getSimpleName(), location, name, wareHouse, workers);
         this.barn = barn;
-        this.petHouse = petHouse;
+    }
+
+    @Override
+    protected void initProcessHook() {
+        barn.process();
+        
     }
 
     @Override
     protected String useReportHook() {
-        return petHouse.report() + barn.report();
+        return barn.report();
+    }
+
+    public Barn getBarn() {
+        return barn;
     }
 
 }

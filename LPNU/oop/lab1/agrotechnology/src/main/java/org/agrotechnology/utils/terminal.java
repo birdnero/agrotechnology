@@ -2,10 +2,13 @@ package org.agrotechnology.utils;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import org.agrotechnology.Farm.Farm;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
@@ -22,15 +25,15 @@ final public class terminal {
      */
     public static <T> int initOptions(T[] options, Runnable backSpaceAction, Runnable topAction) {
         int selected = 0;
-
         clean();
         while (true) {
             try {
                 cursorOnOff(false);
-
                 printOptions(options, selected, null, 0, new int[] {}, topAction);
 
-                int key = System.in.read();
+                Terminal console = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
+                                                                                   // клавіш
+                int key = console.reader().read(); // метод для зчитування
 
                 switch (key) {
                     case 65: // Key arrow up
@@ -46,11 +49,11 @@ final public class terminal {
                         clean();
                         return selected;
 
-                    case 8:
+                    case 127:
                         if (backSpaceAction != null) {
                             backSpaceAction.run();
                         }
-                        break;
+                        return -1;
 
                     default:
                         break;
@@ -78,15 +81,15 @@ final public class terminal {
         int selected1 = 0;
         int selected2 = 0;
 
-        clean();
-
         while (true) {
             try {
                 cursorOnOff(false);
 
                 printOptions(options1, selected1, options2, selected2, usedTo, topAction);
 
-                int key = System.in.read();
+                Terminal terminal = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
+                                                                                    // клавіш
+                int key = terminal.reader().read(); // метод для зчитування
 
                 switch (key) {
                     case 65: // Key arrow up
@@ -160,6 +163,106 @@ final public class terminal {
         }
     }
 
+    //////////////////////////////////////////////////////////
+
+    public static <T, V> int[] initOptions(
+            T[] options1,
+            String[][] matrix2opt,
+            Runnable backSpaceAction,
+            Runnable topAction) {
+        int selected1 = 0;
+        int selected2 = 0;
+
+        if (options1.length != matrix2opt.length) {
+            terminal.errorExit("list initOptions error");
+        }
+
+        while (true) {
+            try {
+                cursorOnOff(false);
+
+                printOptions(options1, selected1, matrix2opt, selected2, topAction);
+
+                Terminal terminal = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
+                                                                                    // клавіш
+                int key = terminal.reader().read(); // метод для зчитування
+
+                switch (key) {
+                    case 65: // Key arrow up
+                        if (selected1 > 0) {
+                            selected1--;
+                            selected2 = 0;
+                        }
+                        break;
+                    case 66: // Key arrow down
+                        if (selected1 < options1.length - 1) {
+                            selected1++;
+                            selected2 = 0;
+                        }
+                        break;
+
+                    case 67: // Key arrow right
+                        if (selected2 < matrix2opt[selected1].length - 1) {
+                            selected2++;
+                        }
+                        break;
+                    case 68: // Key arrow left
+                        if (selected2 > 0) {
+                            selected2--;
+                        }
+                        break;
+
+                    case 127: // backspace
+                        if (backSpaceAction != null) {
+                            backSpaceAction.run();
+                        }
+                        return new int[] { -1, -1 };
+
+                    case 10: // Enter
+                        cursorOnOff(true);
+                        clean();
+                        if (matrix2opt[selected1] == null || matrix2opt[selected1].length == 0) {
+                            return new int[] { selected1, -1 };
+                        } else {
+                            return new int[] { selected1, selected2 };
+                        }
+
+                    default:
+                        break;
+                }
+
+            } catch (IOException e) {
+                System.out.println("Error in terminalOptions :/ --> " + e);
+                continue;
+            }
+            cursorOnOff(true);
+        }
+    }
+
+    private static <T, V> void printOptions(T[] options1, int selected1, V[][] options2, int selected2,
+            Runnable topAction) {
+        clean();
+        if (topAction != null) {
+            topAction.run();
+        }
+
+        for (int i = 0; i < options1.length; i++) {
+            if (i == selected1) {
+                if (options2 == null || options2[i] == null || options2[i].length == 0) {
+                    print("\033[35m> ", options1[i], "\033[0m", "\n");
+                } else {
+                    print("\033[35m> ", options1[i], "\t\t", "\033[33m", "> ", options2[i][selected2], " <",
+                            "\033[0m", "\n");
+
+                }
+            } else {
+                print("  ", options1[i], "\n");
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////
+
     public static void print(Object... objs) {
         for (Object obj : objs) {
             System.out.print(obj);
@@ -174,7 +277,7 @@ final public class terminal {
 
         str.append("\033[33m");
         str.append(value);
-        str.append("\\033[0m\n");
+        str.append("\033[0m\n");
         return str.toString();
     }
 
@@ -190,10 +293,10 @@ final public class terminal {
      * Виводить анімоване повідомлення в термінал.
      *
      * @param message Повідомлення, яке буде виведено.
-     * @param color   0 - рожевий, 1 - червоний.
+     * @param color   0 - рожевий, 1 - червоний, 2 - зелений.
      */
     public static void previewing(String message, int color) {
-        String[] colors = { "\033[35m", "\033[31m" };
+        String[] colors = { "\033[35m", "\033[31m", "\033[32m" };
 
         cleanBudgetToo();
         cursorOnOff(false);
@@ -227,6 +330,7 @@ final public class terminal {
      */
     public static void clean() {
         print("\033[H\033[J", "\n");// чистить консоль
+        System.out.flush();
         printBudget();
     }
 
@@ -235,6 +339,7 @@ final public class terminal {
      */
     private static void cleanBudgetToo() {
         print("\033[H\033[J", "\n");// чистить консоль
+        System.out.flush();
     }
 
     public static void cursorOnOff(boolean onOff) {
@@ -267,15 +372,20 @@ final public class terminal {
      * @param keyId  8 - backspace
      * @param action
      */
-    public static void keyAction(int keyId, Runnable action) {
+    public static boolean keyAction(int keyId) {
         try {
-            int key = System.in.read();
+            Terminal terminal = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
+                                                                                // клавіш
+            cursorOnOff(false);
+            int key = terminal.reader().read(); // метод для зчитування
+            cursorOnOff(true);
             if (key == keyId) {
-                action.run();
+                return true;
             }
         } catch (IOException e) {
             errorExit("key Action error");
         }
+        return false;
     }
 
     public static void errorExit(String message) {
@@ -316,13 +426,21 @@ final public class terminal {
 
     public static String input(String message) {
         clean();
-        print(colorize(message, 0, false));
         cursorOnOff(true);
-        Scanner scanner = new Scanner(System.in);
+        String str = "";
+        try {
+            while (str.isEmpty()) {
+                Terminal console = TerminalBuilder.terminal();
+                LineReader reader = LineReaderBuilder.builder().terminal(console).build();
 
-        String data = scanner.nextLine();
-        clean();
-        return data;
+                str = reader.readLine(colorize(message, 0, false));
+            }
+            clean();
+            return str;
+
+        } catch (IOException e) {
+            return input(message);
+        }
     }
 
     public static int inputNumber(String message) {
@@ -330,24 +448,25 @@ final public class terminal {
         print(colorize(message, 0, false));
         cursorOnOff(true);
         try {
+            System.in.skip(System.in.available());
             Scanner scanner = new Scanner(System.in);
             int data = scanner.nextInt();
             clean();
             return data;
 
-        } catch (InputMismatchException e) {
+        } catch (Exception e) {
             return inputNumber(message);
         }
     }
 
     /**
      * 
-     * @param color    0 - pink, 1 - red, 2 - blueNeon, 3 - yellow
+     * @param color    0 - pink, 1 - red, 2 - blueNeon, 3 - yellow, 4 - green
      * @param boldness показує чи потрібно робити жирний шрифт
      */
     public static String colorize(String text, int color, boolean boldness) {
-        String[] colors = { "\033[35m", "\033[31m", "\033[36m", "\033[33m" };
-        String[] colorsBold = { "\033[1;35m", "\033[1;31m", "\033[1;36m", "\033[1;33m" };
+        String[] colors = { "\033[35m", "\033[31m", "\033[36m", "\033[33m", "\033[32m" };
+        String[] colorsBold = { "\033[1;35m", "\033[1;31m", "\033[1;36m", "\033[1;33m", "\033[1;32m" };
         if (boldness) {
             return colorsBold[color] + text + "\033[0m";
 
@@ -365,5 +484,13 @@ final public class terminal {
         str.append(colorize(Farm.getBudget() + "$", 3, true));
         str.append("\n");
         terminal.print(str.toString());
+    }
+
+    public static void buyOperationMessage(boolean status){
+        if (status) {
+            terminal.previewing("seccefully added", 2);
+        } else {
+            terminal.previewing("something went wrong", 1);
+        }
     }
 }

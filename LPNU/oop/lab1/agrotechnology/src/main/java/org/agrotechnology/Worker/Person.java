@@ -2,26 +2,47 @@ package org.agrotechnology.Worker;
 
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
+
+import com.google.gson.annotations.Expose;
 
 public abstract class Person {
-    enum Sex{
+    enum Sex {
         MALE,
         FEMALE
     };
 
+    public static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private int age;
+
+    @Expose
     private String birthDay;
-    private int age = (birthDay == null ? Period.between(LocalDate.parse(birthDay), LocalDate.now()).getYears() : 0);
+    @Expose
     protected Sex sex;
+    @Expose
     protected String fullName;
 
-    
-    public Person(String fullName,Sex sex, String birthDay) {
+    public Person(String fullName, Sex sex, String birthDay) {
         this.birthDay = birthDay;
+        this.age = Period.between(LocalDate.parse(birthDay, FORMAT), LocalDate.now()).getYears();
         this.sex = sex;
         this.fullName = fullName;
     }
 
-    protected int getAge(){
+    protected int getAge() {
         return age;
+    }
+
+    public String getBirthDay() {
+        return this.birthDay;
+    }
+
+    public Sex getSex() {
+        return sex;
+    }
+
+    public String getFullName() {
+        return fullName;
     }
 }

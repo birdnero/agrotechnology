@@ -6,13 +6,22 @@ import org.agrotechnology.HasReport;
 import org.agrotechnology.Farm.Farm;
 import org.agrotechnology.utils.terminal;
 
+import com.google.gson.annotations.Expose;
+
 public class WareHouse implements HasReport {
 
+    @Expose
     protected String location;
+    @Expose
     protected int size;
-    protected ArrayList<StorageCell> storage = new ArrayList<StorageCell>();
+    @Expose
+    protected int capacity;
+    @Expose
     protected String name;
+    @Expose
     protected double freshness;
+    @Expose
+    protected ArrayList<StorageCell> storage = new ArrayList<StorageCell>();
 
     /**
      * стандартний склад
@@ -26,19 +35,29 @@ public class WareHouse implements HasReport {
         this.size = size;
         this.name = name;
         this.freshness = 1;
+        this.capacity = 0;
 
         new Process(this);
     }
 
-    public static class StorageCell {
-        String type;
-        int amount;
-        int price;
 
-        public StorageCell(String type, int amount, int price) {
+    public static class StorageCell {
+        @Expose
+        String type;
+        @Expose
+        int amount;
+
+        public StorageCell(String type, int amount) {
             this.type = type;
             this.amount = amount;
-            this.price = price;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public int getAmount() {
+            return amount;
         }
     }
 
@@ -53,50 +72,67 @@ public class WareHouse implements HasReport {
         return false;
     }
 
-    public double getFreshness() {
-        return freshness;
-    }
-
-    public boolean putFood(String type, int amount, int price) {// !
-        for (StorageCell cell : storage) {
-            if (cell.type.equals(type)) {
-                cell.amount += amount;
-                return true;
-            }
+    /**
+     * перевіряє вміст
+     * 
+     * @return -1 - якщо немає місця, amount - якщо місця достатньо, щось менше -
+     *         вільне місце
+     */
+    public int isSpaceFor(int amount) {
+        if (this.capacity + amount < this.size) {
+            return amount;
+        } else if (this.capacity < this.size) {
+            return this.size - this.capacity;
         }
-        storage.add(new StorageCell(type, amount, price));
-        this.freshness += 0.05;
-        return true;
+        return -1;
     }
 
-    public boolean putFood(String type, int amount) {// !
-        for (StorageCell cell : storage) {
-            if (cell.type.equals(type)) {
-                cell.amount += amount;
-                return true;
+    public int getFreeSpace(){
+        return this.size - this.capacity;
+    }
+
+    public boolean putFood(String type, int amount) {
+        if (this.size >= this.capacity + amount) {
+            this.capacity += amount;
+            for (StorageCell cell : storage) {
+                if (cell.type.equals(type)) {
+                    cell.amount += amount;
+                    return true;
+                }
             }
+            storage.add(new StorageCell(type, amount));
         }
         return false;
     }
 
     /**
      * дістати щось зі складу
+     * 
      * @return повертає всю їжу що є якщо на складі не стає
      */
     public int getFood(String type, int amount) {
+        if(amount <= 0){
+            return 0;
+        }
         for (StorageCell cell : storage) {
             if (cell.type.equals(type)) {
                 if (cell.amount >= amount) {
+                    this.capacity -= amount;
                     cell.amount -= amount;
                     return amount;
                 } else {
                     amount = cell.amount;
+                    this.capacity -= amount;
                     cell.amount = 0;
                     return amount;
                 }
             }
         }
         return 0;
+    }
+
+    public void process(){
+        new Process(this);
     }
 
     @Override
@@ -106,10 +142,38 @@ public class WareHouse implements HasReport {
         str.append(terminal.formatName(this.name));
         str.append(terminal.formatDataValue("located", location));
         str.append(terminal.formatDataValue("size", size + " m²"));
-        str.append("items:\n");
-        for (StorageCell cell : storage) {
-            str.append(terminal.formatDataValue(cell.type, cell.amount + " x " + cell.price + "$"));
+        if (!storage.isEmpty()) {
+            str.append(terminal.formatName("STORAGE ITEMS"));
+            for (StorageCell cell : storage) {
+                str.append(terminal.formatDataValue(cell.type, cell.amount));
+            }
+
         }
         return str.toString();
     }
+
+    public double getFreshness() {
+        return freshness;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ArrayList<StorageCell> getStorage() {
+        return storage;
+    }
+
 }

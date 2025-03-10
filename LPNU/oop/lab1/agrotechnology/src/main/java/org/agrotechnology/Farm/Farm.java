@@ -7,31 +7,40 @@ import org.agrotechnology.WareHouse.WareHouse;
 import org.agrotechnology.Worker.Worker;
 import org.agrotechnology.utils.terminal;
 
-public abstract class Farm implements HasReport {
-    protected int size;
-    protected String location;
-    protected String name;
-    private int id;
+import com.google.gson.annotations.Expose;
 
-    private static int BUDGET = 0;
+public abstract class Farm implements HasReport {
+    @Expose
+    private String type;
+    @Expose
+    protected String location;
+    @Expose
+    protected String name;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    private static int BUDGET = 1000; // ! організуваи в окремий файл
 
     // dependence injection
+    @Expose
     protected WareHouse wareHouse;
+    @Expose
     protected ArrayList<Worker> workers;
 
     protected Farm(
-            String name,
+            String type,
             String location,
-            int size,
+            String name,
             WareHouse wareHouse,
             ArrayList<Worker> workers) {
 
+        this.type = type;
         this.name = name;
         this.location = location;
-        this.size = size;
         this.wareHouse = wareHouse;
         this.workers = workers;
-        this.id = (int) (Math.random() * 10000);
     }
 
     /**
@@ -39,7 +48,7 @@ public abstract class Farm implements HasReport {
      * @param value - сума яка додастся або відніметься
      * @return - повертає оновлений бюджет або -1 якщо грошей недостатньо
      */
-    public static int updateBudget(int value) { 
+    public static int updateBudget(int value) {
         if (BUDGET + value > 0) {
             BUDGET += value;
             return BUDGET;
@@ -47,22 +56,31 @@ public abstract class Farm implements HasReport {
         return -1;
     }
 
-    public static int getBudget() { // !
+    public static int getBudget() { 
         return BUDGET;
     }
+
+    public void initProcess(){
+        wareHouse.process();
+        initProcessHook();
+    }
+
+    abstract protected void  initProcessHook();
 
     @Override
     public String report() {
         StringBuilder str = new StringBuilder();
-        str.append(terminal.formatName(this.name));
+        str.append(terminal.formatName("Farm \"" + this.name + "\""));
         str.append(terminal.formatDataValue("budget", getBudget()));
         str.append(terminal.formatDataValue("location", this.location));
-        str.append(terminal.formatDataValue("size", this.size + " m²"));
 
         str.append(this.wareHouse.report());
+        if (!workers.isEmpty()) {
+            str.append(terminal.formatName("WORKERS"));
 
-        for (Worker worker : workers) {
-            str.append(worker.report());
+            for (Worker worker : workers) {
+                str.append(worker.report());
+            }
         }
         str.append(useReportHook());
         str.append("\n");
@@ -76,6 +94,26 @@ public abstract class Farm implements HasReport {
 
     public String getName() {
         return name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public static int getBUDGET() {
+        return BUDGET;
+    }
+
+    public WareHouse getWareHouse() {
+        return wareHouse;
+    }
+
+    public ArrayList<Worker> getWorkers() {
+        return workers;
+    }
+
+    public String getType() {
+        return type;
     }
 
 }
