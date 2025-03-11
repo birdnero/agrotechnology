@@ -36,6 +36,12 @@ public class AnimalFarm extends Farm {
         this.barn = barn;
     }
 
+    public AnimalFarm(String type, String name, String location, WareHouse wareHouse, ArrayList<Worker> workers,
+            Barn barn) {
+        super(type, location, name, wareHouse, workers);
+        this.barn = barn;
+    }
+
     @Override
     protected void initProcessHook() {
         barn.process();

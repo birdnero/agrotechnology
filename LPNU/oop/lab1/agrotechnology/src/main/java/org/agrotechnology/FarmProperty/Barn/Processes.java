@@ -27,8 +27,8 @@ public class Processes {
       }
     };
 
-    timer.scheduleAtFixedRate(feed, 5000, 10_000, TimeUnit.MILLISECONDS);
-    timer.scheduleAtFixedRate(animals, 5000, 60_000, TimeUnit.MILLISECONDS);
+    timer.scheduleAtFixedRate(feed, 50000, 100_000, TimeUnit.MILLISECONDS);
+    timer.scheduleAtFixedRate(animals, 50000, 120_000, TimeUnit.MILLISECONDS);
 
   }
 

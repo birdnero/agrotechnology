@@ -1,7 +1,10 @@
 package org.agrotechnology.FarmProperty.Field;
 
+import java.util.ArrayList;
+
 import org.agrotechnology.HasReport;
 import org.agrotechnology.Farm.Farm;
+import org.agrotechnology.Farm.PlantFarm;
 import org.agrotechnology.FarmProperty.Field.Plants.Plant;
 import org.agrotechnology.WareHouse.WareHouse;
 import org.agrotechnology.utils.terminal;
@@ -18,7 +21,7 @@ public class Field implements HasReport {
     @Expose
     protected int sown;
     @Expose
-    protected double ripened;
+    protected int ripened;
     @Expose
     protected double waterLevel;
 
@@ -34,26 +37,12 @@ public class Field implements HasReport {
         new GrowProcess(this);
     }
 
-    
-/**
- * GSON constructor
- */
-    public Field(Plant type, int size, int sown, double ripened, double waterLevel) {
-        this.type = type;
-        this.size = size;
-        this.sown = sown;
-        this.ripened = ripened;
-        this.waterLevel = waterLevel;
-    }
-
-
-
     /**
      * посіяти ще
      * 
      * @return
      */
-    public boolean toSow(int amount) {// !
+    public boolean toSow(int amount) {
         if (Farm.getBudget() - this.type.getBuyPrice() * amount >= 0 && this.size - this.sown >= amount) {
             Farm.updateBudget(-this.type.getBuyPrice() * amount);
             this.sown += amount;
@@ -62,7 +51,16 @@ public class Field implements HasReport {
         return false;
     }
 
-    public boolean waterField() {// !
+    public int canSow() {
+        int canToSow = this.size - this.sown;
+        int canBuy = (int) (Farm.getBUDGET() / this.type.getBuyPrice());
+        if (canToSow >= canBuy) {
+            return canBuy;
+        }
+        return canToSow;
+    }
+
+    public boolean waterField() {
         if (Farm.getBudget() - 150 >= 0) {
             Farm.updateBudget(-150);
             this.waterLevel = 1;
@@ -75,29 +73,28 @@ public class Field implements HasReport {
      * 
      * @return зібрати врожай
      */
-    public int takeRipened(int amount, WareHouse wareHouse) {
+    public boolean takeRipened(int amount, WareHouse wareHouse) {
         int freeSpace = wareHouse.isSpaceFor(amount);
         if (freeSpace < 0) {
-            return -1;
+            return false;
         }
-        if (ripened >= amount && freeSpace == amount) {
+        if (ripened >= amount && freeSpace >= amount) {
             ripened -= amount;
             wareHouse.putFood(this.type.getName(), amount);
-            return amount;
+            return true;
         }
+        return false;
+    }
 
-        int value = (int) (this.ripened);
-        if (freeSpace >= value) {
-            wareHouse.putFood(this.type.getName(), value);
-            this.ripened = 0;
-            return value;
+    public int canTakeRipened(WareHouse wareHouse) {
+        int freeSpace = wareHouse.getFreeSpace();
+        if (freeSpace >= this.ripened) {
+            return this.ripened;
         }
-        wareHouse.putFood(this.type.getName(), freeSpace);
-        this.ripened -= freeSpace;
         return freeSpace;
     }
 
-    public void process(){
+    public void process() {
         new GrowProcess(this);
     }
 
@@ -108,7 +105,7 @@ public class Field implements HasReport {
         str.append(terminal.formatName("Field of " + type.getName()));
         str.append(terminal.formatDataValue("size", this.size + " m²"));
         str.append(terminal.formatDataValue("sown", this.sown));
-        str.append(terminal.formatDataValue("has ripened", this.sown * this.ripened));
+        str.append(terminal.formatDataValue("has ripened", this.ripened));
         str.append("\n");
 
         return str.toString();
@@ -132,5 +129,84 @@ public class Field implements HasReport {
 
     public double getWaterLevel() {
         return waterLevel;
+    }
+
+    // ? </-- CONSOLE METHODS --/>
+
+    public static Field consoleCreateField() {
+        int fieldSize = terminal.inputNumber("Field size (m²): ");
+
+        int fieldType = terminal.initOptions(Plant.getTypes(), () -> {
+        }, () -> {
+            terminal.print(terminal.colorize("\tSelect type of plant\n", 0, true));
+        });
+
+        return new Field(Plant.getTypes()[fieldType], fieldSize);
+    }
+
+    public static void consoleActions(PlantFarm farm) {
+        Field field = farm.getField();
+        while (true) {
+
+            ArrayList<String> options = new ArrayList<>();
+            options.add("to sow " + field.type.getName());
+            options.add("to water");
+            options.add("harvest");
+
+            int canSow = field.canSow();
+            String[] sowArr = new String[canSow];
+            for (int i = 0; i < canSow; i++) {
+                sowArr[i] = (i + 1) + "";
+            }
+
+            String[][] secondOption = {
+                    sowArr,
+                    null,
+                    null
+            };
+
+            int[] selected = terminal.initOptions(
+                    options.toArray(),
+                    secondOption,
+                    null,
+                    () -> terminal
+                            .print(terminal.colorize("\t" + field.type.getName().toUpperCase() + " FIELD:\n", 0,
+                                    true)));
+
+            if (selected[0] == -1) {
+                return;
+            }
+            switch (selected[0]) {
+                case 0:
+
+                    if (selected[1] == -1) {
+                        terminal.previewing("no unough money or place :(", 1);
+                    } else {
+                        terminal.statusMessage(field.toSow(selected[1] + 1), "sowed");
+                    }
+
+                    break;
+
+                case 1:
+                    if (field.waterField()) {
+                        terminal.statusMessage(true, "watered");
+                    } else {
+                        terminal.previewing("no unough money :(", 1);
+                    }
+                    break;
+
+                case 2:
+                int amount = field.canTakeRipened(farm.getWareHouse());
+                    if (amount <= 0) {
+                        terminal.previewing("no production yet :(", 1);
+                    } else {
+                        terminal.statusMessage(field.takeRipened(amount, farm.getWareHouse()), "taken");
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 }

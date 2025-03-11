@@ -20,7 +20,9 @@ final class FridgeProcess {
             }
         };
 
-        timer.scheduleAtFixedRate(fridge, 5000, 50000, TimeUnit.MILLISECONDS);
+        timer.scheduleAtFixedRate(fridge, 50000, 50000, TimeUnit.MILLISECONDS);
     }
+
+    
 
 }

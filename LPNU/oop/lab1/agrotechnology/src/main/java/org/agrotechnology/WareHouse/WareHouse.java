@@ -1,9 +1,13 @@
 package org.agrotechnology.WareHouse;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.agrotechnology.HasReport;
+import org.agrotechnology.Main;
 import org.agrotechnology.Farm.Farm;
+import org.agrotechnology.FarmProperty.Barn.Animal;
+import org.agrotechnology.FarmProperty.Field.Plants.Plant;
 import org.agrotechnology.utils.terminal;
 
 import com.google.gson.annotations.Expose;
@@ -17,11 +21,11 @@ public class WareHouse implements HasReport {
     @Expose
     protected int capacity;
     @Expose
-    protected String name;
-    @Expose
     protected double freshness;
     @Expose
     protected ArrayList<StorageCell> storage = new ArrayList<StorageCell>();
+    @Expose
+    protected String type;
 
     /**
      * стандартний склад
@@ -30,16 +34,25 @@ public class WareHouse implements HasReport {
      * @param size
      * @param name     - назва/тип складу
      */
-    public WareHouse(String location, int size, String name) {
+    public WareHouse(String location, int size) {
         this.location = location;
         this.size = size;
-        this.name = name;
         this.freshness = 1;
         this.capacity = 0;
+        this.type = WareHouse.class.getSimpleName();
 
         new Process(this);
     }
 
+    public WareHouse(String type, String location, int size) {
+        this.location = location;
+        this.size = size;
+        this.freshness = 1;
+        this.capacity = 0;
+        this.type = type;
+
+        new Process(this);
+    }
 
     public static class StorageCell {
         @Expose
@@ -64,7 +77,8 @@ public class WareHouse implements HasReport {
     /**
      * за 200 оновлює свіжість до 1
      */
-    public boolean fullyCleanWareHouse() {// !
+    public boolean fullyCleanWareHouse() {
+
         if (Farm.updateBudget(-200) >= 0) {
             this.freshness = 1;
             return true;
@@ -87,8 +101,24 @@ public class WareHouse implements HasReport {
         return -1;
     }
 
-    public int getFreeSpace(){
+    public int getFreeSpace() {
         return this.size - this.capacity;
+    }
+
+    public String[] getListOfStorage() {
+        ArrayList<String> prod = new ArrayList<>();
+        for (int i = 0; i < storage.size(); i++) {
+            if (storage.get(i).getAmount() > 0) {
+                prod.add(storage.get(i).getType());
+            }
+        }
+
+
+        String[] products = new String[prod.size()];
+        for (int i = 0; i < prod.size(); i++) {
+            products[i] = prod.get(i);
+        }
+        return products;
     }
 
     public boolean putFood(String type, int amount) {
@@ -111,7 +141,7 @@ public class WareHouse implements HasReport {
      * @return повертає всю їжу що є якщо на складі не стає
      */
     public int getFood(String type, int amount) {
-        if(amount <= 0){
+        if (amount <= 0) {
             return 0;
         }
         for (StorageCell cell : storage) {
@@ -131,19 +161,76 @@ public class WareHouse implements HasReport {
         return 0;
     }
 
-    public void process(){
+    /**
+     * дістати щось зі складу
+     * 
+     * @return повертає всю їжу що є якщо на складі не стає
+     */
+    public int checkIfIsFood(String type) {
+        for (StorageCell cell : storage) {
+            if (cell.type.equals(type)) {
+                return cell.getAmount();
+            }
+        }
+        return 0;
+    }
+
+    public boolean transferFood(String type, WareHouse wareHouse) {
+        int isAvaible = Math.min(this.checkIfIsFood(type), 50);
+        int freeSpace = wareHouse.isSpaceFor(isAvaible);
+        if (freeSpace > 0) {
+            wareHouse.putFood(type, this.getFood(type, freeSpace));
+            return true;
+        }
+        return false;
+    }
+
+    public boolean sellFood(String type) {
+        int food = getFood(type, size);
+        int price = 0;
+
+        for (int i = 0; i < Animal.getList().length; i++) {
+            for (int j = 0; j < Animal.getList()[i].getProducts().length; j++) {
+                if (Animal.getList()[i].getProducts()[j].equals(type)) {
+                    price = Animal.getList()[i].getSellPrice();
+                    break;
+                }
+            }
+        }
+        if (price > 0) {
+            Farm.updateBudget(price * food);
+            return true;
+        }
+
+        for (int i = 0; i < Plant.getList().length; i++) {
+            if (Plant.getList()[i].getName().equals(type)) {
+                price = Plant.getList()[i].getSelPrice();
+            }
+        }
+        if (price > 0) {
+            Farm.updateBudget(price * food);
+            return true;
+        }
+        return false;
+    }
+
+    public void process() {
         new Process(this);
+        processHook();
+    }
+
+    public void processHook() {
     }
 
     @Override
     public String report() {
         StringBuilder str = new StringBuilder();
 
-        str.append(terminal.formatName(this.name));
+        str.append(terminal.formatName("WareHouse"));
         str.append(terminal.formatDataValue("located", location));
         str.append(terminal.formatDataValue("size", size + " m²"));
         if (!storage.isEmpty()) {
-            str.append(terminal.formatName("STORAGE ITEMS"));
+            str.append(terminal.formatName("storage items"));
             for (StorageCell cell : storage) {
                 str.append(terminal.formatDataValue(cell.type, cell.amount));
             }
@@ -168,12 +255,123 @@ public class WareHouse implements HasReport {
         return capacity;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public ArrayList<StorageCell> getStorage() {
         return storage;
+    }
+
+    // ? </-- CONSOLE METHODS --/>
+
+    public static WareHouse consoleCreateWareHouse() {
+        int wareHouseSize = terminal.inputNumber("WareHouse size (m²): ");
+        String location = terminal.input("WareHouse location: ");
+
+        /////////////////////////////////////////////////////
+        int[] useFridge = terminal.initOptions(new String[] { "use fridge in wareHouse?" },
+                new String[] { "yes", "no" },
+                new int[] { 0 }, () -> {
+                }, null);
+
+        WareHouse wareHouse = new WareHouse(location, wareHouseSize);
+        if (useFridge[1] == 0) {
+            wareHouse = new WareHouseWithFridge(location, wareHouseSize);
+        }
+        return wareHouse;
+    }
+
+    public static void consoleActions(Farm farm) {
+        WareHouse wareHouse = farm.getWareHouse();
+        while (true) {
+
+            ArrayList<String> options = new ArrayList<>();
+            options.add("clean");
+
+            options.add("transfer");
+
+            if (wareHouse instanceof WareHouseWithFridge) {
+                options.add("charge fridge");
+            }
+
+            int selected = terminal.initOptions(
+                    options.toArray(),
+                    null,
+                    () -> terminal.print(terminal.colorize("\tWAREHOUSE:\n", 0, true)));
+
+            switch (selected) {
+                case -1:
+                    return;
+
+                case 0:
+                    if (wareHouse.fullyCleanWareHouse()) {
+                        terminal.previewing("seccefully cleaned", 2);
+                    } else {
+                        terminal.previewing("no unough money :(", 1);
+                    }
+                    break;
+                case 2:
+                    if (((WareHouseWithFridge) wareHouse).chargeFridge()) {
+                        terminal.previewing("seccefully charged", 2);
+                    } else {
+                        terminal.previewing("no unough money :(", 1);
+                    }
+                    break;
+
+                case 1:
+                    consoleTransfer(farm);
+
+                default:
+                    break;
+            }
+
+        }
+    }
+
+    private static void consoleTransfer(Farm farm) {
+        List<Farm> farms = Main.getFarms();
+        while (true) {
+            ArrayList<Farm> farmsLocal = new ArrayList<>();
+
+            for (int i = 0; i < farms.size(); i++) {
+                if(!farms.get(i).getName().equals(farm.getName())){
+                    farmsLocal.add(farms.get(i));
+                }
+            }
+            String[] farmsNames = new String[farmsLocal.size()];
+
+            for (int i = 0; i < farmsLocal.size(); i++) {
+                farmsNames[i] = farmsLocal.get(i).getName();
+            }
+
+            String[] products = farm.getWareHouse().getListOfStorage();
+            int[] usedTo = new int[farmsNames.length];
+            for (int i = 0; i < usedTo.length; i++) {
+                usedTo[i] = i;
+            }
+
+            if (products.length == 0) {
+                terminal.previewing("no products:(", 1);
+                return;
+            }
+
+            int[] selected = terminal.initOptions(farmsNames, products, usedTo, null,
+                    () -> terminal.print(terminal.colorize("\tSelect WareHouse :\n", 0, true)));
+
+            if (selected[0] == -1) {
+                return;
+            }
+
+            if (selected[1] == -1) {
+                terminal.previewing("no products:(", 1);
+            } else {
+                if(farm.getWareHouse().transferFood(products[selected[1]], farmsLocal.get(selected[0]).getWareHouse())){
+                    terminal.statusMessage(true, "transfered");
+                }else {
+                    terminal.previewing("no free space :(", 1);
+                }
+
+
+            }
+
+        }
     }
 
 }

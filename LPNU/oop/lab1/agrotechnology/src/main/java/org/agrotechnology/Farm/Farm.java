@@ -1,10 +1,19 @@
 package org.agrotechnology.Farm;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.agrotechnology.HasReport;
+import org.agrotechnology.Main;
+import org.agrotechnology.FarmProperty.Barn.Barn;
+import org.agrotechnology.FarmProperty.Field.Field;
 import org.agrotechnology.WareHouse.WareHouse;
 import org.agrotechnology.Worker.Worker;
+import org.agrotechnology.Worker.WorkerUtil;
 import org.agrotechnology.utils.terminal;
 
 import com.google.gson.annotations.Expose;
@@ -21,7 +30,7 @@ public abstract class Farm implements HasReport {
         this.name = name;
     }
 
-    private static int BUDGET = 1000; // ! організуваи в окремий файл
+    private static int BUDGET = 0;
 
     // dependence injection
     @Expose
@@ -56,16 +65,35 @@ public abstract class Farm implements HasReport {
         return -1;
     }
 
-    public static int getBudget() { 
+    public static int getBudget() {
         return BUDGET;
     }
 
-    public void initProcess(){
+    public static void readBudget() {
+        try {
+
+            String budget = Files.readString(Path.of("src/main/java/org/agrotechnology/data/BUGET.txt"));
+            Farm.updateBudget(Integer.parseInt(budget));
+
+        } catch (IOException e) {
+            terminal.errorExit("budget reading error");
+        }
+    }
+
+    public static void syncBudget() {
+        try (FileWriter file = new FileWriter(Path.of("src/main/java/org/agrotechnology/data/BUGET.txt").toFile())) {
+            file.write((Farm.getBUDGET() + ""));
+        } catch (IOException e) {
+            terminal.errorExit("budget sync error");
+        }
+    }
+
+    public void initProcess() {
         wareHouse.process();
         initProcessHook();
     }
 
-    abstract protected void  initProcessHook();
+    abstract protected void initProcessHook();
 
     @Override
     public String report() {
@@ -114,6 +142,136 @@ public abstract class Farm implements HasReport {
 
     public String getType() {
         return type;
+    }
+
+    // ? </-- CONSOLE METHODS --/>
+
+    private static void consoleCreateFarm() {
+        terminal.CtrlC(true);
+        int[] type = terminal.initOptions(new String[] { "type" }, new String[] { "Animal farm", "Plant farm" },
+                new int[] { 0 }, null, null);
+        String name = terminal.input("Farm name: ");
+        String location = terminal.input("location: ");
+
+        ////////////////////////////////////////////////////
+        WareHouse wareHouse = WareHouse.consoleCreateWareHouse();
+
+        ArrayList<Worker> workers = WorkerUtil.consoleCreateWorkers(name);
+
+        if (type[1] == 0) {
+
+            Barn barn = Barn.consoleCreateBarn();
+
+            AnimalFarm farm = new AnimalFarm(name, location, wareHouse, workers, barn);
+
+            Main.getFarms().add(farm);
+        } else {
+            Field field = Field.consoleCreateField();
+
+            PlantFarm farm = new PlantFarm(name, location, wareHouse, workers, field);
+
+            Main.getFarms().add(farm);
+        }
+
+        Main.sync.syncFarms(Main.getFarms());
+        terminal.previewing("seccefully created!", 0);
+
+        terminal.CtrlC(false);
+    }
+
+    private static void consoleFarmEdit(Farm farm) {
+        while (true) {
+
+            ArrayList<String> options = new ArrayList<>();
+
+            if (farm instanceof AnimalFarm) {
+                options.add("barn");
+            } else if (farm instanceof PlantFarm) {
+                options.add("field");
+            }
+            options.add("wareHouse");
+            options.add("workers");
+
+            int selected = terminal.initOptions(options.toArray(), null, () -> {
+                terminal.print(terminal.colorize("\tACTIONS:\n", 0, true));
+            });
+            if (selected == -1) {
+                return;
+            }
+
+            switch (selected) {
+                case 0:
+                    if (farm instanceof AnimalFarm) {
+                        Barn.consoleActions((AnimalFarm) farm);
+                    } else if (farm instanceof PlantFarm) {
+                        Field.consoleActions(((PlantFarm) farm));
+                    }
+                    break;
+                case 1:
+                    WareHouse.consoleActions(farm);
+                    break;
+                case 2:
+                    WorkerUtil.consoleActions(farm);
+                    break;
+
+                default:
+                    break;
+            }
+            Main.sync.syncFarms(Main.getFarms());
+        }
+
+    }
+
+    /**
+     * menu to do actions with farm
+     */
+    public static void consoleFarmsView() {
+        while (true) {
+
+            List<String> actionList = new ArrayList<String>();
+            actionList.add("add");
+
+            int[] usedTo = new int[Main.getFarms().size()];
+
+            for (int i = 0; i < Main.getFarms().size(); i++) {
+                usedTo[i] = i + 1;
+                actionList.add(Main.getFarms().get(i).getName());
+            }
+
+            int[] selected = terminal.initOptions(actionList.toArray(), new String[] { "view", "actions", "delete" },
+                    usedTo,
+                    null, null);
+
+            if (selected[0] == -1) {
+                return;
+            }
+
+            if (selected[0] == 0) {
+                consoleCreateFarm();
+            } else {
+                int actionType = selected[1];
+                int farmIndex = selected[0] - 1;
+
+                if (actionType == 0) {
+                    terminal.clean();
+                    terminal.print(Main.getFarms().get(farmIndex).report());
+                    boolean back = false;
+                    while (!back) {
+                        back = terminal.keyAction(127);
+                    }
+
+                } else if (actionType == 1) {
+                    terminal.clean();
+                    consoleFarmEdit(Main.getFarms().get(farmIndex));
+
+                } else if (actionType == 2) {
+                    Main.getFarms().remove(farmIndex);
+                    terminal.clean();
+                    Main.sync.syncFarms(Main.getFarms());
+                    terminal.previewing("seccefully deleted", 0);
+                }
+            }
+        }
     }
 
 }

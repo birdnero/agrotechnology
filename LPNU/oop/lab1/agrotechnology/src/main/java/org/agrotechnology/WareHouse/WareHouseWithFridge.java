@@ -2,8 +2,15 @@ package org.agrotechnology.WareHouse;
 
 import org.agrotechnology.Farm.Farm;
 
+import com.google.gson.annotations.Expose;
+
 public class WareHouseWithFridge extends WareHouse {
+    @Expose
     protected double fridgeWithAccumulator;
+
+    public double getFridgeWithAccumulator() {
+        return fridgeWithAccumulator;
+    }
 
     /**
      * склад з спеціальним холодильником
@@ -12,8 +19,8 @@ public class WareHouseWithFridge extends WareHouse {
      * @param size
      * @param name     - назва/тип складу
      */
-    public WareHouseWithFridge(String location, int size, String name) {
-        super(location, size, name);
+    public WareHouseWithFridge(String location, int size) {
+        super(WareHouseWithFridge.class.getSimpleName(), location, size);
         fridgeWithAccumulator = 10;
         new FridgeProcess(this);
     }
@@ -23,15 +30,22 @@ public class WareHouseWithFridge extends WareHouse {
      * 
      * @return повертає рівень заряду холодильника
      */
-    public double chargeFridge() {
+    public boolean chargeFridge() {
         if (Farm.updateBudget(-20) >= 0) {
             this.fridgeWithAccumulator += 2;
+            return true;
         }
-        return this.fridgeWithAccumulator;
+        return false;
     }
 
     public double getFridgeAccumulatorLevel() {
         return fridgeWithAccumulator;
     }
 
+    @Override
+    public void processHook() {
+        new FridgeProcess(this);
+    }
+
+    
 }

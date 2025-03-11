@@ -25,8 +25,8 @@ final class GrowProcess {
             }
         };
 
-        timer.scheduleAtFixedRate(grow, 5000, 50000, TimeUnit.MILLISECONDS);
-        timer.scheduleAtFixedRate(water, 10000, 10000, TimeUnit.MILLISECONDS);
+        timer.scheduleAtFixedRate(grow, 50_000, 50_000, TimeUnit.MILLISECONDS);
+        timer.scheduleAtFixedRate(water, 100_000, 100_000, TimeUnit.MILLISECONDS);
 
     }
 

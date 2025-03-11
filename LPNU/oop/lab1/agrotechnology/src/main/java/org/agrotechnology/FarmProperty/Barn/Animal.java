@@ -13,6 +13,12 @@ public class Animal {
     private String name;
     @Expose
     private double life;
+    @Expose 
+    private int sellPrice;
+
+    public int getSellPrice() {
+        return sellPrice;
+    }
 
     /**
      * avaible Animal create
@@ -20,12 +26,13 @@ public class Animal {
      * @param products - what can give animal
      * @param canEat   - what can eat animal
      */
-    public Animal(String name, int price, double life, String[] products, String[] canEat) {
+    public Animal(String name, int price, double life, String[] products, String[] canEat, int sellPrice) {
         this.name = name;
         this.price = price;
         this.life = life;
         this.Products = products;
         this.canEat = canEat;
+        this.sellPrice = sellPrice;
     }
 
     public int getPrice() {
@@ -52,16 +59,16 @@ public class Animal {
 
     private static final Animal[] AnimalList = new Animal[] {
             new Animal("Chiken", 6, 0.25, new String[] { "ChikenMeat" },
-                    new String[] { "Corn", "Wheat", "Millet", "Rye" }),
+                    new String[] { "Corn", "Wheat", "Millet", "Rye" }, 3),
 
             new Animal("Pig", 45, 0.4, new String[] { "Pork" },
-                    new String[] { "Corn", "Tomato", "Wheat", "Millet", "Rye", "Buckwheat", "Potato" }),
+                    new String[] { "Corn", "Tomato", "Wheat", "Millet", "Rye", "Buckwheat", "Potato" }, 5),
 
-            new Animal("Sheep", 60, 0.47, new String[] { "Wool", "Mutton" }, new String[] { "Grass", "Herb", "Hay" }),
+            new Animal("Sheep", 60, 0.47, new String[] { "Wool", "Mutton" }, new String[] { "Grass", "Herb", "Hay" }, 5),
 
-            new Animal("Cow", 150, 0.8, new String[] { "Milk", "Beef" }, new String[] { "Grass", "Herb", "Hay" }),
+            new Animal("Cow", 150, 0.8, new String[] { "Milk", "Beef" }, new String[] { "Grass", "Herb", "Hay" }, 3),
 
-            new Animal("Student SHI", 13, 0.04, new String[] { "slave meat" }, new String[] { "Wheat", "Grass" }),
+            new Animal("Student SHI", 13, 0.04, new String[] { "slave meat" }, new String[] { "Wheat", "Grass" }, 2),
     };
 
     public static Animal[] getList() {

@@ -34,6 +34,16 @@ public class PlantFarm extends Farm {
         this.field = field;
     }
 
+    
+
+    public PlantFarm(String type, String name, String location, WareHouse wareHouse, ArrayList<Worker> workers,
+            Field field) {
+        super(type, location, name, wareHouse, workers);
+        this.field = field;
+    }
+
+
+
     @Override
     protected void initProcessHook() {
         field.process();

@@ -14,8 +14,6 @@ public abstract class Person {
 
     public static final DateTimeFormatter FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    private int age;
-
     @Expose
     private String birthDay;
     @Expose
@@ -25,13 +23,12 @@ public abstract class Person {
 
     public Person(String fullName, Sex sex, String birthDay) {
         this.birthDay = birthDay;
-        this.age = Period.between(LocalDate.parse(birthDay, FORMAT), LocalDate.now()).getYears();
         this.sex = sex;
         this.fullName = fullName;
     }
 
     protected int getAge() {
-        return age;
+        return Period.between(LocalDate.parse(birthDay, FORMAT), LocalDate.now()).getYears();
     }
 
     public String getBirthDay() {

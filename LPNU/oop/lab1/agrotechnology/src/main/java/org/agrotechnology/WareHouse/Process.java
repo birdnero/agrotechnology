@@ -16,7 +16,7 @@ public class Process {
             }
         };
 
-        timer.scheduleAtFixedRate(fridge, 5000, 50000, TimeUnit.MILLISECONDS);
+        timer.scheduleAtFixedRate(fridge, 50000, 500000, TimeUnit.MILLISECONDS);
     }
 
 }

@@ -20,8 +20,8 @@ public class Barn implements HasReport {
     protected int animalsAmount;
     @Expose
     protected int feedAmount;
-    @Expose 
-    protected int productionAmount; 
+    @Expose
+    protected int productionAmount;
 
     /**
      * 
@@ -38,9 +38,8 @@ public class Barn implements HasReport {
         new Processes(this);
     }
 
-
     public boolean addAnimal(int amount) {
-        if(amount < 0){
+        if (amount < 0) {
             return false;
         }
         if (Farm.getBudget() - this.type.getPrice() * amount >= 0 && this.size - this.animalsAmount >= amount) {
@@ -55,7 +54,7 @@ public class Barn implements HasReport {
         int budget = Farm.getBUDGET();
         if (this.size - this.animalsAmount >= (int) (budget / this.type.getPrice())) {
             return (int) (budget / this.type.getPrice());
-        } 
+        }
         return this.size - this.animalsAmount;
     }
 
@@ -63,39 +62,49 @@ public class Barn implements HasReport {
      * @return повертає feedAmount
      */
     public boolean putFeed(int amount, String type, WareHouse wareHouse) {
-        if(amount < 0){
+        if (amount < 0) {
             return false;
         }
-        if (amount + this.feedAmount > this.animalsAmount * 32) {
-            amount = this.animalsAmount * 32;
-        }
+        amount = Math.min(amount, (this.animalsAmount + 1) * 32 - this.feedAmount);
         int feed = wareHouse.getFood(type, amount);
         this.feedAmount += feed;
         return true;
     }
 
-    public int canPutFeed(String type, WareHouse wareHouse){
-        if(this.animalsAmount * 32 - this.feedAmount >= wareHouse.getFood(type, 50)){
-            return wareHouse.getFood(type, 50);
+    public int canPutFeed(String type, WareHouse wareHouse) {
+        
+        if (this.animalsAmount * 32 - this.feedAmount >= Math.min(wareHouse.checkIfIsFood(type), 0)) {
+            return Math.min(wareHouse.checkIfIsFood(type), 50);
         }
-        if(animalsAmount*32 - this.feedAmount < 0){
+        if (animalsAmount * 32 - this.feedAmount < 0) {
             this.feedAmount = 0;
         }
         return this.animalsAmount * 32 - this.feedAmount;
     }
 
-    public boolean getProduction(int amount, WareHouse wareHouse){
-        if(amount <= productionAmount && wareHouse.getFreeSpace() >= amount * this.type.getProducts().length){
+    public boolean getProduction(int amount, WareHouse wareHouse) {
+        if (amount <= productionAmount && wareHouse.getFreeSpace() >= amount * this.type.getProducts().length) {
             productionAmount -= amount;
-            for(String typeName: this.type.getProducts()){
+            for (String typeName : this.type.getProducts()) {
                 wareHouse.putFood(typeName, amount);
             }
             return true;
-        } 
+        }
         return false;
     }
 
-    public void process(){
+    public int canGetProduction(WareHouse wareHouse) {
+        int canGetProduct = this.getProductionAmount();
+        int dabler = this.type.getProducts().length;
+        int wareHouseFreeSpace = wareHouse.getFreeSpace();
+        int product = canGetProduct;
+        if (wareHouseFreeSpace < dabler * canGetProduct) {
+            product = (int) (wareHouseFreeSpace / dabler);
+        }
+        return product;
+    }
+
+    public void process() {
         new Processes(this);
     }
 
@@ -129,13 +138,13 @@ public class Barn implements HasReport {
         return feedAmount;
     }
 
-    public int getProductionAmount(){
+    public int getProductionAmount() {
         return productionAmount;
     }
 
-    //?           </-- CONSOLE METHODS --/> 
+    // ? </-- CONSOLE METHODS --/>
 
-    public static Barn consoleCreateBarn(){
+    public static Barn consoleCreateBarn() {
         int barnType = terminal.initOptions(Animal.getTypes(), () -> {
         }, () -> {
             terminal.print(terminal.colorize("\tSelect type of animals\n", 0, true));
@@ -161,16 +170,10 @@ public class Barn implements HasReport {
                 addArr[i] = (i + 1) + "";
             }
 
-            int canGetProduct = barn.getProductionAmount();
-            int dabler = barn.type.getProducts().length;
-            int wareHouseFreeSpace = farm.getWareHouse().getFreeSpace();
-            int arrSize = canGetProduct;
-            if(wareHouseFreeSpace < dabler * canGetProduct){
-                arrSize = (int)(wareHouseFreeSpace/dabler);
-            }
+            int arrSize = barn.canGetProduction(farm.getWareHouse());
             String[] getProductArr = new String[arrSize];
             for (int i = 0; i < arrSize; i++) {
-                getProductArr[i] = (i+1) + "";
+                getProductArr[i] = (i + 1) + "";
             }
 
             String[][] secondOption = {
@@ -182,8 +185,8 @@ public class Barn implements HasReport {
             int[] selected = terminal.initOptions(
                     options.toArray(),
                     secondOption,
-                    () -> terminal.print(terminal.colorize("\tBARN:\n", 0, true)),
-                    null);
+                    null,
+                    () -> terminal.print(terminal.colorize("\tBARN:\n", 0, true)));
 
             if (selected[0] == -1) {
                 return;
@@ -192,9 +195,9 @@ public class Barn implements HasReport {
                 case 0:
 
                     if (selected[1] == -1) {
-                        terminal.previewing("no unough money :(", 1);
+                        terminal.previewing("no unough money or room:(", 1);
                     } else {
-                        terminal.buyOperationMessage(barn.addAnimal(selected[1] + 1));
+                        terminal.statusMessage(barn.addAnimal(selected[1] + 1), "added");
                     }
 
                     break;
@@ -204,10 +207,11 @@ public class Barn implements HasReport {
                     break;
 
                 case 2:
-                    if(selected[1] == -1){
+                    if (selected[1] == -1) {
                         terminal.previewing("no production yet :(", 1);
                     } else {
-                        terminal.buyOperationMessage(barn.getProduction(selected[1] + 1, farm.getWareHouse()));
+                        terminal.statusMessage(barn.getProduction(selected[1] + 1, farm.getWareHouse()), "taked");
+
                     }
                     break;
 
@@ -242,7 +246,7 @@ public class Barn implements HasReport {
             if (putted[1] == -1) {
                 terminal.previewing("no feed in wareHouse :(", 1);
             } else {
-                terminal.buyOperationMessage(barn.putFeed(putted[1] + 1, foodTypes[putted[0]], farm.getWareHouse()));
+                terminal.statusMessage(barn.putFeed(putted[1] + 1, foodTypes[putted[0]], farm.getWareHouse()), "putted");
             }
 
         }

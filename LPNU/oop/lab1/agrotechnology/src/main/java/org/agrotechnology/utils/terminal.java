@@ -150,7 +150,7 @@ final public class terminal {
 
         for (int i = 0; i < options1.length; i++) {
             if (i == selected1) {
-                if (options2 == null || Arrays.binarySearch(usedTo, selected1) < 0) {
+                if (options2 == null || options2.length == 0 || Arrays.binarySearch(usedTo, selected1) < 0) {
                     print("\033[35m> ", options1[i], "\033[0m", "\n");
                 } else {
                     print("\033[35m> ", options1[i], "\t\t", "\033[33m", "> ", options2[selected2], " <",
@@ -486,9 +486,13 @@ final public class terminal {
         terminal.print(str.toString());
     }
 
-    public static void buyOperationMessage(boolean status){
+    /**
+     * preview typized
+     * @param state "seccesfully {state}"
+     */
+    public static void statusMessage(boolean status, String state) {
         if (status) {
-            terminal.previewing("seccefully added", 2);
+            terminal.previewing("seccefully " + state, 2);
         } else {
             terminal.previewing("something went wrong", 1);
         }
