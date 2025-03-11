@@ -31,7 +31,7 @@
       "fridgeWithAccumulator": 1.000000000000002,
       "location": "my room",
       "size": 350,
-      "capacity": -130,
+      "capacity": 130,
       "freshness": 0.0999999999999994,
       "storage": [
         {

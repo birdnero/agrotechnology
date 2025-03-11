@@ -25,23 +25,30 @@ public class WorkerUtil {
         return Files.readString(path).split(", ");
     }
 
-    // ! write comments
+    /**
+     * <h3>генерує будь яку дату від 1960р до сьогодні - 18р</h3>
+     * @return рядок дати
+     */
     private static String birthdayGenerate() {
+        //робить дату 1960р
         LocalDate start = LocalDate.of(1960, 1, 1);
+        //дата сьогодні - 18р
         LocalDate end = LocalDate.now().minusYears(18);
 
+        //дістає кількість днів між датами
         long daysBtw = ChronoUnit.DAYS.between(start, end);
+        //генерує рандомні числа
         SecureRandom r = new SecureRandom();
         long days = r.nextLong(daysBtw + 1);
 
+        //повертає дату з 1960+ випадкове число днів в потрібному діапазоні
         return start.plusDays(days).format(Person.FORMAT);
     }
 
     /**
-     * 
+     * <h3>генератор масиву працівників</h3>
      * @param amount    of workers
      * @param workPlace - name of Farm
-     * @return ArrayList<Worker>
      */
     private static ArrayList<Worker> workerArrGenerator(int amount, String workPlace) {
         ArrayList<Worker> workers = new ArrayList<Worker>();
@@ -78,6 +85,11 @@ public class WorkerUtil {
 
     // ? </-- CONSOLE METHODS --/>
 
+    /**
+     * <h3>майтер створення масиву працівників</h3>
+     * @param workPlace - назва ферми
+     * @return масив працівників
+     */
     public static ArrayList<Worker> consoleCreateWorkers(String workPlace) {
         Integer[] workersAmount = new Integer[10];
         for (int i = 0; i < 10; i++) {
@@ -91,6 +103,9 @@ public class WorkerUtil {
         return WorkerUtil.workerArrGenerator(workersAm[1] + 1, workPlace);
     }
 
+    /**
+     * викликає меню доступних дій надпрацівниками на потрібній фермі
+     */
     public static void consoleActions(Farm farm) {
         ArrayList<Worker> workers = farm.getWorkers();
         while (true) {
@@ -186,6 +201,9 @@ public class WorkerUtil {
 
     }
 
+    /**
+     * меню найму нового працівника на потрібну ферму
+     */
     private static void consoleHireSomeOne(Farm farm) {
         try {
             if (positions == null) {

@@ -14,15 +14,10 @@ public class WareHouseWithFridge extends WareHouse {
 
     /**
      * склад з спеціальним холодильником
-     * 
-     * @param location - те саме що й у ферми
-     * @param size
-     * @param name     - назва/тип складу
      */
     public WareHouseWithFridge(String location, int size) {
         super(WareHouseWithFridge.class.getSimpleName(), location, size);
         fridgeWithAccumulator = 10;
-        new FridgeProcess(this);
     }
 
     /**
@@ -44,7 +39,22 @@ public class WareHouseWithFridge extends WareHouse {
 
     @Override
     public void processHook() {
-        new FridgeProcess(this);
+        new Process(this) {
+            @Override
+            public void process(WareHouse wareHOuse){
+                if(wareHOuse instanceof WareHouseWithFridge){
+                    WareHouseWithFridge wareHouse = ((WareHouseWithFridge) wareHOuse);
+                    wareHouse.freshness += 0.01;
+                    if (wareHouse.fridgeWithAccumulator > 0) {
+                        wareHouse.fridgeWithAccumulator = Math.max(0, wareHouse.fridgeWithAccumulator - 0.2);
+                    } 
+                    
+                    if(wareHouse.fridgeWithAccumulator == 0 && !wareHouse.storage.isEmpty()){
+                        wareHouse.storage.removeFirst();    
+                    }
+                }
+            }
+        };
     }
 
     

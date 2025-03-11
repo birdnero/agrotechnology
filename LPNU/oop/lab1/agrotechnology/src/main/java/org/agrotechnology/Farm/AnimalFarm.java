@@ -8,21 +8,21 @@ import org.agrotechnology.Worker.Worker;
 
 import com.google.gson.annotations.Expose;
 
+/**
+ * <h3>Ферма тварин, містить додаткове поле barn</h3>
+ */
+// #lab використано наслідування
 public class AnimalFarm extends Farm {
     @Expose
     private Barn barn;
 
     /**
-     * Ферма тварин, потребує додатково домашнього улюбленця😊
-     * 
      * @param name      - ім'я ферми
      * @param location  - локація
      * @param wareHouse - склад (створити і передати)
      * @param workers   - працівники (передати власно створений ArrayList або
      *                  WorkerUtil.workerArrGenerator)
-     * @param petHouse  - //!
-     * @param barnType  - //!
-     * @param barnSize  - //!
+     * @param barn      - приміщення для тварин (створити і передати)
      */
     public AnimalFarm(
             String name,
@@ -36,16 +36,26 @@ public class AnimalFarm extends Farm {
         this.barn = barn;
     }
 
+    /**
+     * @param type - поле для визначення підкласу ( для правильної (де)серіалізації )
+     * @param name      - ім'я ферми
+     * @param location  - локація
+     * @param wareHouse - склад (створити і передати)
+     * @param workers   - працівники (передати власно створений ArrayList або
+     *                  WorkerUtil.workerArrGenerator)
+     * @param barn      - приміщення для тварин (створити і передати)
+     */
     public AnimalFarm(String type, String name, String location, WareHouse wareHouse, ArrayList<Worker> workers,
             Barn barn) {
         super(type, location, name, wareHouse, workers);
         this.barn = barn;
     }
 
+    // #lab використано поліморфізм (насправді він тут буквально всюди це як маленький приклад)
     @Override
     protected void initProcessHook() {
         barn.process();
-        
+
     }
 
     @Override

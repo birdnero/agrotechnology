@@ -3,15 +3,16 @@ package org.agrotechnology.WareHouse;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.agrotechnology.HasReport;
 import org.agrotechnology.Main;
 import org.agrotechnology.Farm.Farm;
 import org.agrotechnology.FarmProperty.Barn.Animal;
-import org.agrotechnology.FarmProperty.Field.Plants.Plant;
+import org.agrotechnology.FarmProperty.Field.Plant;
+import org.agrotechnology.utils.HasReport;
 import org.agrotechnology.utils.terminal;
 
 import com.google.gson.annotations.Expose;
 
+// #lab використано інтерфейс ну і ще це хороший приклад абстракції
 public class WareHouse implements HasReport {
 
     @Expose
@@ -41,7 +42,6 @@ public class WareHouse implements HasReport {
         this.capacity = 0;
         this.type = WareHouse.class.getSimpleName();
 
-        new Process(this);
     }
 
     public WareHouse(String type, String location, int size) {
@@ -51,9 +51,9 @@ public class WareHouse implements HasReport {
         this.capacity = 0;
         this.type = type;
 
-        new Process(this);
     }
 
+    // #lab використано внутрішній статичний клас
     public static class StorageCell {
         @Expose
         String type;
@@ -112,7 +112,6 @@ public class WareHouse implements HasReport {
                 prod.add(storage.get(i).getType());
             }
         }
-
 
         String[] products = new String[prod.size()];
         for (int i = 0; i < prod.size(); i++) {
@@ -215,7 +214,17 @@ public class WareHouse implements HasReport {
     }
 
     public void process() {
-        new Process(this);
+        // #lab використано анонімний клас
+        new Process(this) {
+            @Override
+            public void process(WareHouse wareHouse) {
+                wareHouse.freshness = Math.max(0, wareHouse.freshness - 0.03);
+
+                if (wareHouse.freshness <= 0 && !wareHouse.storage.isEmpty()) {
+                    wareHouse.storage.removeFirst();
+                }
+            }
+        };
         processHook();
     }
 
@@ -331,7 +340,7 @@ public class WareHouse implements HasReport {
             ArrayList<Farm> farmsLocal = new ArrayList<>();
 
             for (int i = 0; i < farms.size(); i++) {
-                if(!farms.get(i).getName().equals(farm.getName())){
+                if (!farms.get(i).getName().equals(farm.getName())) {
                     farmsLocal.add(farms.get(i));
                 }
             }
@@ -362,12 +371,12 @@ public class WareHouse implements HasReport {
             if (selected[1] == -1) {
                 terminal.previewing("no products:(", 1);
             } else {
-                if(farm.getWareHouse().transferFood(products[selected[1]], farmsLocal.get(selected[0]).getWareHouse())){
+                if (farm.getWareHouse().transferFood(products[selected[1]],
+                        farmsLocal.get(selected[0]).getWareHouse())) {
                     terminal.statusMessage(true, "transfered");
-                }else {
+                } else {
                     terminal.previewing("no free space :(", 1);
                 }
-
 
             }
 

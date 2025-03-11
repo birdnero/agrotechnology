@@ -17,11 +17,10 @@ import sun.misc.SignalHandler;
 final public class terminal {
 
     /**
-     * 
-     * @param <T>[]     приймає масив буд якого типу
-     * @param options   тільки масиви
-     * @param topAсtion зазвичай для задання label для опцій
-     * @return повертає індекс обраного варіанту
+     * <h3>Ініціалізація вибору вертикально</h3>
+     * @param options   опції до відображення
+     * @param topAсtion зазвичай для задання label для опцій, викликається перед опціями і не зникає
+     * @return повертає індекс обраного варіанту або -1 при backspace = null
      */
     public static <T> int initOptions(T[] options, Runnable backSpaceAction, Runnable topAction) {
         int selected = 0;
@@ -31,9 +30,11 @@ final public class terminal {
                 cursorOnOff(false);
                 printOptions(options, selected, null, 0, new int[] {}, topAction);
 
-                Terminal console = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
-                                                                                   // клавіш
-                int key = console.reader().read(); // метод для зчитування
+                //jLine - бібліотека для зчитування клавіш
+                Terminal console = TerminalBuilder.builder().system(true).build();  
+                                                                                   
+                // метод для зчитування
+                int key = console.reader().read(); 
 
                 switch (key) {
                     case 65: // Key arrow up
@@ -49,7 +50,7 @@ final public class terminal {
                         clean();
                         return selected;
 
-                    case 127:
+                    case 127: //backspace
                         if (backSpaceAction != null) {
                             backSpaceAction.run();
                         }
@@ -68,12 +69,12 @@ final public class terminal {
     }
 
     /**
-     * 
-     * @param options1 масив будь якого типу
-     * @param options2 друга опція, для додаткових опцій
-     * @param usedTo   позиції для яких буде використовуватися друга опція
-     * @return повертає масив - 1 - індекс опції1, 2 - індекс опції2 при відсутності
-     *         опції2 повертає для 2 елемента -1
+     * <h3>Ініціалізація вибору вертикально + горизонтально (одинаковий для всіх)</h3>
+     * @param options1 вертикальні опції
+     * @param options2 горизонтальні опції
+     * @param usedTo   індекси для яких буде використовуватися горизонтальні опції
+     * @return повертає масив - [ індекс опції1, індекс опції2 ] при відсутності
+     *         опції2 повертає для другого елемента -1, на backspace == null повертає [-1, -1]
      */
     public static <T, V> int[] initOptions(T[] options1, V[] options2, int[] usedTo, Runnable backSpaceAction,
             Runnable topAction) {
@@ -141,6 +142,15 @@ final public class terminal {
         }
     }
 
+    /**
+     * <h3>внутрішній метод для відображення списку</h3> (вертикальний та горизонтальний одинаковий)
+     * @param options1 - вертикальні опції
+     * @param selected1 - індекс вибраного у вертикальних опціях
+     * @param options2 - горизонтальні опції (null якщо тільки вертикальний)
+     * @param selected2 - індекс вибраного у горизонтальних опціях
+     * @param usedTo - масив індексів до яких вертикальних опцій застосовувати горизонтальні опції (null якщо тільки вертикальний)
+     * @param topAction - дія перед відображення опцій
+     */
     private static <T, V> void printOptions(T[] options1, int selected1, V[] options2, int selected2, int[] usedTo,
             Runnable topAction) {
         clean();
@@ -165,6 +175,14 @@ final public class terminal {
 
     //////////////////////////////////////////////////////////
 
+
+    /**
+     * <h3>Ініціалізація вибору вертикально + горизонтально (різний для всіх)</h3>
+     * @param options1 вертикальні опції
+     * @param matrix2opt горизонтальні опції (кожен масив для відповідного рядка) [пусті масив або null якщо горизонтального вибору непотрібно]
+     * @return повертає масив - [ індекс опції1, індекс опції2 ] при відсутності горизонтального для поточного вибору друге значення = -1
+     *           на backspace == null повертає [-1, -1]
+     */
     public static <T, V> int[] initOptions(
             T[] options1,
             String[][] matrix2opt,
@@ -239,6 +257,14 @@ final public class terminal {
         }
     }
 
+     /**
+     * <h3>внутрішній метод для відображення списку</h3> (горизонтальний різний)
+     * @param options1 - вертикальні опції
+     * @param selected1 - індекс вибраного у вертикальних опціях
+     * @param options2 - горизонтальні опції 
+     * @param selected2 - індекс вибраного у горизонтальних опціях
+     * @param topAction - дія перед відображення опцій
+     */
     private static <T, V> void printOptions(T[] options1, int selected1, V[][] options2, int selected2,
             Runnable topAction) {
         clean();
@@ -263,6 +289,10 @@ final public class terminal {
 
     //////////////////////////////////////////////////////////
 
+    /**
+     * <h3>відображення в терміналі тексту</h3>
+     * @param objs - через кому будь які обєкти
+     */
     public static void print(Object... objs) {
         for (Object obj : objs) {
             System.out.print(obj);
@@ -369,8 +399,7 @@ final public class terminal {
     /**
      * EventListener для клавіш
      * 
-     * @param keyId  8 - backspace
-     * @param action
+     * @param keyId  127 - backspace
      */
     public static boolean keyAction(int keyId) {
         try {

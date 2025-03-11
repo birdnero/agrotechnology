@@ -1,6 +1,6 @@
 package org.agrotechnology.Worker;
 
-import org.agrotechnology.HasReport;
+import org.agrotechnology.utils.HasReport;
 import org.agrotechnology.utils.terminal;
 
 import com.google.gson.annotations.Expose;

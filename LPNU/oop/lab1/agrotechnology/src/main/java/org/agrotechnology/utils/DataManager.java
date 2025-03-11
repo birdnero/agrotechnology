@@ -1,4 +1,4 @@
-package org.agrotechnology;
+package org.agrotechnology.utils;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -18,7 +18,6 @@ import org.agrotechnology.FarmProperty.Field.Field;
 import org.agrotechnology.WareHouse.WareHouse;
 import org.agrotechnology.WareHouse.WareHouseWithFridge;
 import org.agrotechnology.Worker.Worker;
-import org.agrotechnology.utils.terminal;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,6 +42,7 @@ public final class DataManager {
                 .create();
     }
 
+    //? старий десеріалізатор (не враховує WareHouseWithFridge)
     // // ? дозволяє десеріалізувати ферму з правильною типізацією
     // class FarmDeserializer implements JsonDeserializer<Farm> {
     //     /**

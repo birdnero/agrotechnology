@@ -2,10 +2,10 @@ package org.agrotechnology.FarmProperty.Barn;
 
 import java.util.ArrayList;
 
-import org.agrotechnology.HasReport;
 import org.agrotechnology.Farm.AnimalFarm;
 import org.agrotechnology.Farm.Farm;
 import org.agrotechnology.WareHouse.WareHouse;
+import org.agrotechnology.utils.HasReport;
 import org.agrotechnology.utils.terminal;
 
 import com.google.gson.annotations.Expose;

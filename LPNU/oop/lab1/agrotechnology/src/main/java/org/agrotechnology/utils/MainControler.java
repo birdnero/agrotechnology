@@ -1,15 +1,17 @@
-package org.agrotechnology.DialogControls;
+package org.agrotechnology.utils;
 
 import java.util.List;
 
 import org.agrotechnology.Main;
 import org.agrotechnology.Farm.Farm;
-import org.agrotechnology.utils.terminal;
 
 public final class MainControler {
 
     ///////////////////////////////////////////////////
 
+    /**
+     * меню продажу продукції з потрібної ферми
+     */
     private static void productActions() {
         List<Farm> farms = Main.getFarms();
         while (true) {
@@ -46,6 +48,9 @@ public final class MainControler {
 
     }
 
+    /**
+     * меню з викликом основного інтерфейсу програми
+     */
     public static void initMainChoice() {
         while (true) {
             String[] actionList = { "view farms", "product actions", "help", "exit" };

@@ -1,4 +1,4 @@
-package org.agrotechnology.FarmProperty.Field.Plants;
+package org.agrotechnology.FarmProperty.Field;
 
 import com.google.gson.annotations.Expose;
 

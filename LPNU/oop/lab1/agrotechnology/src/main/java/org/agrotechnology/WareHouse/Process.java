@@ -4,19 +4,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Process {
+/**
+ * абстрактний клас для виклику незалежних процесів
+ */
+// #lab використано абстрактний клас
+public abstract class Process {
     public Process(WareHouse wareHouse) {
         ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
 
-        Runnable fridge = () -> {
-            wareHouse.freshness = Math.max(0, wareHouse.freshness - 0.03);
-
-            if (wareHouse.freshness <= 0 && !wareHouse.storage.isEmpty()) {
-                wareHouse.storage.removeFirst();
-            }
+        Runnable processAction = () -> {
+            process(wareHouse);
         };
 
-        timer.scheduleAtFixedRate(fridge, 50000, 500000, TimeUnit.MILLISECONDS);
+        timer.scheduleAtFixedRate(processAction, 50000, 500000, TimeUnit.MILLISECONDS);
     }
+
+    abstract public void process(WareHouse wareHouse);
 
 }

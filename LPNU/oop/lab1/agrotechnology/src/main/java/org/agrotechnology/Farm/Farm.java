@@ -7,18 +7,22 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.agrotechnology.HasReport;
 import org.agrotechnology.Main;
 import org.agrotechnology.FarmProperty.Barn.Barn;
 import org.agrotechnology.FarmProperty.Field.Field;
 import org.agrotechnology.WareHouse.WareHouse;
 import org.agrotechnology.Worker.Worker;
 import org.agrotechnology.Worker.WorkerUtil;
+import org.agrotechnology.utils.HasReport;
 import org.agrotechnology.utils.terminal;
 
 import com.google.gson.annotations.Expose;
 
+/**
+ * основний абстрактний клас, у нього збираються всі деталі і вже ними звідси можна оперувати
+ */
 public abstract class Farm implements HasReport {
+    // #lab використано інкапсуляцію (її використано практично всюди)
     @Expose
     private String type;
     @Expose
