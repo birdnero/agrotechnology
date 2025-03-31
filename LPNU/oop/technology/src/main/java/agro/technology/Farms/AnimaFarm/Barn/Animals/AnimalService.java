@@ -39,7 +39,6 @@ public class AnimalService {
             List<Animal> animals = gson.fromJson(file, typeToken);
             HashMap<String, Animal> animalsMap = new HashMap<>();
             for (Animal animal : animals) {
-                animal.setTerminal(terminal);
                 animalsMap.put(animal.getName(), animal);
             }
             this.animals = animalsMap;
@@ -58,7 +57,7 @@ public class AnimalService {
     }
 
     public void addAnimal(String name, int price, double life, String[] products, String[] canEat, int sellPrice) {
-        animals.put(name, new Animal(price, products, canEat, name, life, sellPrice, terminal));
+        animals.put(name, new Animal(price, products, canEat, name, life, sellPrice));
         sync();
     }
 

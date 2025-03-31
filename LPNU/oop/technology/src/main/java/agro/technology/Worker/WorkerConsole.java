@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
 
-import agro.technology.Farms.Farm.Farm;
+import agro.technology.Farms.Farm;
 import agro.technology.Worker.Person.Sex;
 import agro.technology.utils.CLI;
 import agro.technology.utils.CLI.Colors;
@@ -19,6 +19,21 @@ public class WorkerConsole {
     public WorkerConsole(CLI terminal, WorkerFactory workerFactory) {
         this.terminal = terminal;
         this.workerFactory = workerFactory;
+    }
+
+    public String report(Worker worker) {
+        StringBuilder str = new StringBuilder();
+
+        str.append(terminal.formatName(worker.fullName));
+        str.append(terminal.formatDataValue("sex", (worker.sex == Sex.MALE ? "male" : "female")));
+        str.append(terminal.formatDataValue("age", worker.getAge()));
+        str.append(terminal.formatDataValue("position", worker.position));
+        str.append(terminal.formatDataValue("salary", worker.salary));
+        str.append(terminal.formatDataValue("expirience", worker.expirience));
+        str.append(terminal.formatDataValue("duty", worker.duty));
+        str.append("\n");
+
+        return str.toString();
     }
 
     /**
@@ -126,45 +141,45 @@ public class WorkerConsole {
      * меню найму нового працівника на потрібну ферму
      */
     private void consoleHireSomeOne(Farm farm) {
-       
-            String[] allowedSalary = new String[50];
-            for (int i = 1; i <= 50; i++) {
-                allowedSalary[i - 1] = (i * 2500) + "";
-            }
 
-            int position = terminal.initOptions(workerFactory.getPositions(), null,
-                    () -> terminal.print(terminal.colorize("\tSelect position\n", Colors.PINK, false)));
+        String[] allowedSalary = new String[50];
+        for (int i = 1; i <= 50; i++) {
+            allowedSalary[i - 1] = (i * 2500) + "";
+        }
 
-            if (position == -1) {
-                return;
-            }
+        int position = terminal.initOptions(workerFactory.getPositions(), null,
+                () -> terminal.print(terminal.colorize("\tSelect position\n", Colors.PINK, false)));
 
-            int duty = terminal.initOptions(workerFactory.getDuties(), null,
-                    () -> terminal.print(terminal.colorize("\tSelect duty\n", Colors.PINK, false)));
+        if (position == -1) {
+            return;
+        }
 
-            if (duty == -1) {
-                return;
-            }
+        int duty = terminal.initOptions(workerFactory.getDuties(), null,
+                () -> terminal.print(terminal.colorize("\tSelect duty\n", Colors.PINK, false)));
 
-            int[] newSalary = terminal.initOptions(new String[] { "salary: " }, allowedSalary,
-                    new int[] { 0 }, null, null);
+        if (duty == -1) {
+            return;
+        }
 
-            if (newSalary[0] == -1) {
-                return;
-            }
+        int[] newSalary = terminal.initOptions(new String[] { "salary: " }, allowedSalary,
+                new int[] { 0 }, null, null);
 
-            SecureRandom r = new SecureRandom();
+        if (newSalary[0] == -1) {
+            return;
+        }
 
-            farm.getWorkers().add(new Worker(
-                    workerFactory.getNames()[r.nextInt(workerFactory.getNames().length)],
-                    (r.nextInt(2) == 0 ? Sex.MALE : Sex.FEMALE),
-                    workerFactory.birthdayGenerate(),
-                    workerFactory.getPositions()[position],
-                    r.nextInt(10),
-                    (newSalary[1] + 1) * 2500,
-                    workerFactory.getDuties()[duty],
-                    farm.getName()));
-            terminal.statusMessage(true, "hired");
+        SecureRandom r = new SecureRandom();
+
+        farm.getWorkers().add(new Worker(
+                workerFactory.getNames()[r.nextInt(workerFactory.getNames().length)],
+                (r.nextInt(2) == 0 ? Sex.MALE : Sex.FEMALE),
+                workerFactory.birthdayGenerate(),
+                workerFactory.getPositions()[position],
+                r.nextInt(10),
+                (newSalary[1] + 1) * 2500,
+                workerFactory.getDuties()[duty],
+                farm.getName()));
+        terminal.statusMessage(true, "hired");
 
     }
 

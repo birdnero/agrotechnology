@@ -1,47 +1,75 @@
 package agro.technology.Farms.AnimaFarm;
 
 import java.util.ArrayList;
-import agro.technology.utils.CLI;
-import agro.technology.utils.CLI.Colors;
 
 import org.springframework.stereotype.Service;
 
-import agro.technology.Farms.IFarmConsoleFactory;
-import agro.technology.Farms.AnimaFarm.Barn.Animals.AnimalService;
+import com.google.gson.JsonObject;
+
+import agro.technology.Farms.Farm;
+import agro.technology.Farms.IFarmService;
 import agro.technology.Farms.AnimaFarm.Barn.Barn;
-import agro.technology.Farms.AnimaFarm.Barn.BarnConsoleService;
-import agro.technology.Farms.Farm.Farm;
-import agro.technology.WareHouses.WareHouse.WareHouse;
+import agro.technology.Farms.AnimaFarm.Barn.BarnCLI;
+import agro.technology.Farms.AnimaFarm.Barn.BarnService;
+import agro.technology.Farms.AnimaFarm.Barn.Animals.AnimalService;
+import agro.technology.WareHouses.WareHouse;
 import agro.technology.Worker.Worker;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
-public class AnimalFarmConsoleService implements IFarmConsoleFactory {
+public class AnimalFarmCLIService implements IFarmService {
 
+    private final BarnService barnService;
+
+    private final BarnCLI barnCLI;
+    private final CLI terminal;
     private final AnimalService animalService;
 
-    private final CLI terminal;
-
-    private final BarnConsoleService barnConsoleService;
-
-    public AnimalFarmConsoleService(BarnConsoleService barnConsoleService, CLI terminal, AnimalService animalService) {
-        this.barnConsoleService = barnConsoleService;
-        this.terminal = terminal;
+    public AnimalFarmCLIService(BarnCLI barnCLI, CLI cli, AnimalService animalService, BarnService barnService) {
+        this.barnCLI = barnCLI;
+        this.terminal = cli;
         this.animalService = animalService;
+        this.barnService = barnService;
     }
 
     @Override
-    public Farm create(String type,
-            String location,
-            String name,
-            WareHouse wareHouse,
+    public Farm createViaCLI(String type, String location, String name, WareHouse wareHouse,
             ArrayList<Worker> workers) {
-        Barn barn = barnConsoleService.create();
+        Barn barn = barnCLI.create();
+        if (barn == null)
+            return null;
         return new AnimalFarm(name, location, wareHouse, workers, barn);
     }
 
     @Override
-    public String getType() {
-        return "Farm of animals";
+    public String getFarmType() {
+        return AnimalFarm.type;
+    }
+
+    @Override
+    public void initProcesess(Farm farm) {
+        if (farm instanceof AnimalFarm)
+            barnService.process(((AnimalFarm) farm).getBarn());
+    }
+
+    @Override
+    public Farm load(String type, String location, String name, WareHouse wareHouse, ArrayList<Worker> workers,
+            JsonObject jsonData) {
+        if (type.equals(getFarmType())) {
+
+            Barn barn = barnService.load(jsonData.getAsJsonObject("barn"));
+            return new AnimalFarm(name, location, wareHouse, workers, barn);
+
+        } else
+            terminal.previewing(this.getClass().getSimpleName() + ": different types when load", Colors.RED);
+
+        return null;
+    }
+
+    @Override
+    public String specializationActionLabel() {
+        return "barn";
     }
 
     @Override
@@ -54,13 +82,13 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
             options.add("put feed");
             options.add("get production");
 
-            int canAddAnimals = barn.canAddAnimals();
+            int canAddAnimals = barnService.canAddAnimals(barn);
             String[] addArr = new String[canAddAnimals];
             for (int i = 0; i < canAddAnimals; i++) {
                 addArr[i] = (i + 1) + "";
             }
 
-            int arrSize = barn.canGetProduction(farm.getWareHouse());
+            int arrSize = barnService.canGetProduction(barn, farm.getWareHouse());
             String[] getProductArr = new String[arrSize];
             for (int i = 0; i < arrSize; i++) {
                 getProductArr[i] = (i + 1) + "";
@@ -87,7 +115,7 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
                     if (selected[1] == -1) {
                         terminal.previewing("no unough money or room:(", Colors.RED);
                     } else {
-                        terminal.statusMessage(barn.addAnimal(selected[1] + 1), "added");
+                        terminal.statusMessage(barnService.addAnimal(barn, selected[1] + 1), "added");
                     }
 
                     break;
@@ -100,7 +128,8 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
                     if (selected[1] == -1) {
                         terminal.previewing("no production yet :(", Colors.RED);
                     } else {
-                        terminal.statusMessage(barn.getProduction(selected[1] + 1, farm.getWareHouse()), "taked");
+                        terminal.statusMessage(barnService.getProduction(barn, selected[1] + 1, farm.getWareHouse()),
+                                "taked");
 
                     }
                     break;
@@ -116,10 +145,19 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
         while (true) {
 
             String[] foodTypes = animalService.getAnimal(barn.getType()).getCanEat();
+
+            if (foodTypes == null || foodTypes.length == 0) {
+                terminal.print("this animal can't eat :/");
+                while (!terminal.keyAction(127)) {
+
+                }
+                return;
+            }
+
             String[][] canPutArr = new String[foodTypes.length][];
 
             for (int i = 0; i < foodTypes.length; i++) {
-                int canPut = barn.canPutFeed(foodTypes[i], farm.getWareHouse());
+                int canPut = barnService.canPutFeed(barn, foodTypes[i], farm.getWareHouse());
                 String[] canPutStrArr = new String[canPut];
                 for (int j = 0; j < canPutStrArr.length; j++) {
                     canPutStrArr[j] = (j + 1) + "";
@@ -136,12 +174,18 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
             if (putted[1] == -1) {
                 terminal.previewing("no feed in wareHouse :(", Colors.PINK);
             } else {
-                terminal.statusMessage(barn.putFeed(putted[1] + 1, foodTypes[putted[0]], farm.getWareHouse()),
+                terminal.statusMessage(
+                        barnService.putFeed(barn, putted[1] + 1, foodTypes[putted[0]], farm.getWareHouse()),
                         "putted");
             }
 
         }
 
     }
-    
+
+    @Override
+    public String report(Farm farm) {
+        return barnCLI.report(((AnimalFarm) farm).getBarn());
+    }
+
 }

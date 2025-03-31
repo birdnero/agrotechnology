@@ -1,45 +1,68 @@
-package agro.technology.Farms.Farm;
+package agro.technology.Farms;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import agro.technology.Farms.FarmConsoleFactoryService;
-import agro.technology.Farms.FarmSyncService;
-import agro.technology.WareHouses.WareHousesConsoleService;
-import agro.technology.WareHouses.WareHouse.WareHouse;
+import agro.technology.WareHouses.WareHouse;
+import agro.technology.WareHouses.WareHouseCLI;
 import agro.technology.Worker.Worker;
 import agro.technology.Worker.WorkerConsole;
 import agro.technology.utils.CLI;
 import agro.technology.utils.CLI.Colors;
 
 @Service
-public class FarmConsoleService {
+public class FarmCLI {
+
+    private final WareHouseCLI wareHouseCLI;
 
     private final CLI terminal;
 
-    private final FarmConsoleFactoryService farmConsoleFactoryService;
-    private final WareHousesConsoleService wareHousesConsoleService;
     private final WorkerConsole workerConsole;
-    private final FarmSyncService farmSyncService;
+    private final FarmService farmService;
 
-    public FarmConsoleService(
-            FarmConsoleFactoryService farmConsoleFactoryService,
-            WareHousesConsoleService wareHousesConsoleService,
+    public FarmCLI(
+            FarmService farmService,
             WorkerConsole workerConsole,
             CLI terminal,
-            FarmSyncService farmSyncService) {
-        this.farmConsoleFactoryService = farmConsoleFactoryService;
-        this.wareHousesConsoleService = wareHousesConsoleService;
+            WareHouseCLI wareHouseCLI) {
+        this.farmService = farmService;
         this.workerConsole = workerConsole;
         this.terminal = terminal;
-        this.farmSyncService = farmSyncService;
+        this.wareHouseCLI = wareHouseCLI;
+
+    }
+
+    public void viewFarm(Farm farm) {
+        StringBuilder str = new StringBuilder();
+        str.append(terminal.formatName("Farm \"" + farm.name + "\""));
+        str.append(terminal.formatDataValue("location", farm.location));
+
+        str.append(wareHouseCLI.report(farm.wareHouse));
+        if (!farm.workers.isEmpty()) {
+            str.append(terminal.formatName("WORKERS"));
+
+            for (Worker worker : farm.workers) {
+                str.append(workerConsole.report(worker));
+            }
+        }
+        str.append(farmService.searchService(farm.type).report(farm));
+        str.append("\n");
+
+        terminal.clean();
+        terminal.print(str.toString());
+        boolean back = false;
+        while (!back) {
+            back = terminal.keyAction(127);
+        }
     }
 
     private void consoleCreateFarm() {
         terminal.CtrlC(true);
-        ArrayList<String> farmTypes = new ArrayList<>(farmConsoleFactoryService.getFarmsList());
+        ArrayList<String> farmTypes = new ArrayList<>();
+        for (IFarmService farmS : farmService.getFarmServices())
+            farmTypes.add(farmS.getFarmType());
 
         int type = terminal.initOptions(farmTypes.toArray(), () -> {
         }, () -> terminal.print(terminal.optionsLabel("select type of farm")));
@@ -49,14 +72,17 @@ public class FarmConsoleService {
         String location = terminal.input(() -> terminal.print(terminal.optionsLabel("location")));
 
         ////////////////////////////////////////////////////
-        WareHouse wareHouse = wareHousesConsoleService.consoleCreateWareHouse();
+        WareHouse wareHouse = wareHouseCLI.consoleCreateWareHouse();
 
         ArrayList<Worker> workers = workerConsole.createWorkers(name);
 
-        farmSyncService.getFarms()
-                .add(farmConsoleFactoryService.createFarm(farmTypes.get(type), location, name, wareHouse, workers));
+        Farm farm = farmService.createFarm(farmTypes.get(type), location, name, wareHouse, workers);
+        if (farm == null)
+            return;
 
-        farmSyncService.syncFarms();
+        farmService.getFarms().add(farm);
+
+        farmService.sync();
 
         terminal.previewing("seccefully created!", Colors.PINK);
 
@@ -68,7 +94,7 @@ public class FarmConsoleService {
 
             ArrayList<String> options = new ArrayList<>();
 
-            options.add(farm.getSpecializationName());
+            options.add(farmService.searchService(farm.getType()).specializationActionLabel());
             options.add("wareHouse");
             options.add("workers");
 
@@ -81,10 +107,10 @@ public class FarmConsoleService {
 
             switch (selected) {
                 case 0:
-                    farmConsoleFactoryService.specializationAction(farm);
+                    farmService.searchService(farm.getType()).specializationAction(farm);
                     break;
                 case 1:
-                    wareHousesConsoleService.consoleActions(farm);
+                    wareHouseCLI.consoleActions(farm);
                     break;
                 case 2:
                     workerConsole.actions(farm);
@@ -93,7 +119,7 @@ public class FarmConsoleService {
                 default:
                     break;
             }
-            farmSyncService.syncFarms();
+            farmService.sync();
         }
 
     }
@@ -107,11 +133,11 @@ public class FarmConsoleService {
             List<String> actionList = new ArrayList<String>();
             actionList.add("add");
 
-            int[] usedTo = new int[farmSyncService.getFarms().size()];
+            int[] usedTo = new int[farmService.getFarms().size()];
 
-            for (int i = 0; i < farmSyncService.getFarms().size(); i++) {
+            for (int i = 0; i < farmService.getFarms().size(); i++) {
                 usedTo[i] = i + 1;
-                actionList.add(farmSyncService.getFarms().get(i).getName());
+                actionList.add(farmService.getFarms().get(i).getName());
             }
 
             int[] selected = terminal.initOptions(actionList.toArray(), new String[] { "view", "actions", "delete" },
@@ -129,21 +155,16 @@ public class FarmConsoleService {
                 int farmIndex = selected[0] - 1;
 
                 if (actionType == 0) {
-                    terminal.clean();
-                    terminal.print(farmSyncService.getFarms().get(farmIndex).report());
-                    boolean back = false;
-                    while (!back) {
-                        back = terminal.keyAction(127);
-                    }
+                    viewFarm(farmService.getFarms().get(farmIndex));
 
                 } else if (actionType == 1) {
                     terminal.clean();
-                    consoleFarmEdit(farmSyncService.getFarms().get(farmIndex));
+                    consoleFarmEdit(farmService.getFarms().get(farmIndex));
 
                 } else if (actionType == 2) {
-                    farmSyncService.getFarms().remove(farmIndex);
+                    farmService.getFarms().remove(farmIndex);
                     terminal.clean();
-                    farmSyncService.syncFarms();
+                    farmService.sync();
                     terminal.previewing("seccefully deleted", Colors.PINK);
                 }
             }

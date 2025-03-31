@@ -4,22 +4,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
 import agro.technology.Farms.AnimaFarm.Barn.Animals.AnimalService;
 
 
 public class Processes {
-
-  private AnimalService animalService;
-
-  @Autowired
-  public void setAnimalService(AnimalService animalService) {
-    this.animalService = animalService;
-  }
  
 
-  public Processes(Barn barn) {
+  public Processes(Barn barn, AnimalService animalService) {
     ScheduledExecutorService timer = Executors.newScheduledThreadPool(2);
 
     Runnable feed = () -> {

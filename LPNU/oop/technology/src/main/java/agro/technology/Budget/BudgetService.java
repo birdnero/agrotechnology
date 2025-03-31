@@ -70,7 +70,7 @@ public class BudgetService {
         StringBuilder str = new StringBuilder();
         str.append(terminal.colorize("BUDGET", Colors.BlUE_NEON, true));
         str.append(": \t\t\t");
-        str.append(terminal.colorize(getBudget() + "$", Colors.YELLOW, true));
+        str.append(terminal.colorize(budget + "$", Colors.YELLOW, true));
         str.append("\n");
         return str.toString();
     }

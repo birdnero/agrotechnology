@@ -10,6 +10,9 @@ import java.util.ArrayList;
 
 import org.springframework.stereotype.Service;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import agro.technology.Worker.Person.Sex;
 import agro.technology.utils.CLI;
 import lombok.Getter;
@@ -91,4 +94,36 @@ public class WorkerFactory {
 
         return workers;
     }
+
+    public ArrayList<Worker> load(JsonArray jsonArr) {
+
+        ArrayList<Worker> workers = new ArrayList<>();
+        for (var element : jsonArr) {
+            JsonObject cellJson = element.getAsJsonObject();
+            String position = cellJson.get("position").getAsString();
+            int expirience = cellJson.get("expirience").getAsInt();
+            int salary = cellJson.get("salary").getAsInt();
+            String duty = cellJson.get("duty").getAsString();
+            String workPlace = cellJson.get("workPlace").getAsString();
+
+            String birthDay = cellJson.get("birthDay").getAsString();
+            String sex = cellJson.get("sex").getAsString();
+            String fullName = cellJson.get("fullName").getAsString();
+
+            Worker worker = new Worker(
+                    fullName, (sex.equals("MALE") ? Sex.MALE : Sex.FEMALE),
+                    birthDay,
+                    position,
+                    expirience,
+                    salary,
+                    duty,
+                    workPlace);
+
+            workers.add(worker);
+        }
+
+        return workers;
+    }
+
+    
 }

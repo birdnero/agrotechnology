@@ -4,31 +4,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import agro.technology.Farms.FarmSyncService;
+import agro.technology.Farms.Farm;
+import agro.technology.Farms.FarmCLI;
+import agro.technology.Farms.FarmService;
+import agro.technology.WareHouses.WareHouseService;
 import org.springframework.stereotype.Service;
-import agro.technology.Farms.Farm.FarmConsoleService;
+
 import agro.technology.utils.CLI.Colors;
-import agro.technology.Farms.Farm.Farm;
 
 @Service
 public final class MainControlerService {
 
-    private final FarmSyncService farmSyncService;
+    private final WareHouseService wareHouseService;
 
-    private final FarmConsoleService farmConsoleService;
+    private final FarmCLI farmCLI;
+
+    private final FarmService farmService;
+
+
 
     private final Map<String, ConsoleEditable> editableMap;
 
     private final CLI terminal;
 
     public MainControlerService(
-            FarmConsoleService farmConsoleService,
+            FarmCLI farmConsoleService,
             CLI terminal,
-            FarmSyncService farmSyncService,
-            List<ConsoleEditable> ediatableList) {
+            List<ConsoleEditable> ediatableList, 
+            FarmService farmService, 
+            FarmCLI farmCLI, 
+            WareHouseService wareHouseService) {
         this.terminal = terminal;
-        this.farmConsoleService = farmConsoleService;
-        this.farmSyncService = farmSyncService;
+        this.farmService = farmService;
+        this.farmCLI = farmCLI;
+        this.wareHouseService = wareHouseService;
         // ConsoleEditable::getLabel то саме, що й el->el.getLabel()
         this.editableMap = ediatableList.stream().collect(Collectors.toMap(ConsoleEditable::getLabel, el -> el));
     }
@@ -37,7 +46,7 @@ public final class MainControlerService {
      * меню продажу продукції з потрібної ферми
      */
     private void productActions() {
-        List<Farm> farms = farmSyncService.getFarms();
+        List<Farm> farms = farmService.getFarms();
         while (true) {
             String[] farmsNames = new String[farms.size()];
 
@@ -48,7 +57,7 @@ public final class MainControlerService {
             String[][] avaibleArr = new String[farms.size()][];
 
             for (int i = 0; i < avaibleArr.length; i++) {
-                avaibleArr[i] = farms.get(i).getWareHouse().getListOfStorage();
+                avaibleArr[i] = wareHouseService.getListOfStorage(farms.get(i).getWareHouse());
             }
 
             if(farms == null || farms.isEmpty()){
@@ -66,9 +75,8 @@ public final class MainControlerService {
             } else {
 
                 terminal.statusMessage(
-                        farms.get(selected[0])
-                                .getWareHouse()
-                                .sellFood(avaibleArr[selected[0]][selected[1]]),
+                                wareHouseService.sellFood(farms.get(selected[0])
+                                .getWareHouse(), avaibleArr[selected[0]][selected[1]]),
                         "sold");
 
             }
@@ -88,7 +96,7 @@ public final class MainControlerService {
 
             switch (selected1) {
                 case 0:// farms
-                    farmConsoleService.consoleFarmsView();
+                    farmCLI.consoleFarmsView();
                     break;
 
                 case 1:// product

@@ -23,6 +23,18 @@ public class AnimalConsoleService implements ConsoleEditable {
                 this.terminal = CLI;
         }
 
+        
+    public String report(Animal animal) {
+        StringBuilder str = new StringBuilder();
+        str.append(terminal.formatName(animal.name));
+        str.append(terminal.formatDataValue("life", animal.life * 100 + " weeks"));
+        str.append(terminal.formatDataValue("buy price", animal.price));
+        str.append(terminal.formatDataValue("sell price", animal.sellPrice));
+        str.append(terminal.formatDataValue("can eat: ", String.join(", ", animal.canEat)));
+        str.append(terminal.formatDataValue("production from it: ", String.join(", ", animal.Products)));
+        return str.toString();
+    }
+
         public void createAnimal() {
                 terminal.cursorOnOff(false);
                 terminal.CtrlC(true);
@@ -216,7 +228,7 @@ public class AnimalConsoleService implements ConsoleEditable {
 
                                 switch (selected[1]) {
                                         case 0 -> {
-                                                terminal.print(animal.report());
+                                                terminal.print(report(animal));
                                                 while (!terminal.keyAction(127)) {
                                                 }
                                         }

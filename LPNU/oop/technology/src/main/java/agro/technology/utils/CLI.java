@@ -23,7 +23,7 @@ public class CLI {
 
     public CLI() {
         try {
-            this.topInfo = "";
+            this.topInfo = null;
             this.terminal = TerminalBuilder.builder().system(true).build();
             ;
         } catch (IOException e) {
@@ -329,9 +329,10 @@ public class CLI {
                             selected1--;
                             if (matrix2opt[selected1] == null)
                                 selected2 = -1;
-                            if (matrix2opt[selected1].length - 1 < selected2)
+                            if (matrix2opt[selected1] != null && matrix2opt[selected1].length - 1 < selected2)
                                 selected2 = matrix2opt[selected1].length - 1;
-                            else if (matrix2opt[selected1].length > 0 && selected2 == -1)
+                            else if (matrix2opt[selected1] != null && matrix2opt[selected1].length > 0
+                                    && selected2 == -1)
                                 selected2 = 0;
                         }
                         break;
@@ -373,7 +374,7 @@ public class CLI {
                                 matrix2opt[selected1].length == 0 ||
                                 matrix2opt[selected1].length < selected2 + 1
                                 || matrix2opt[selected1][selected2] == null) {
-                            return new int[] { -1, -1 };
+                            return new int[] { selected1, -1 };
                         }
                         return new int[] { selected1, selected2 };
 
@@ -411,7 +412,11 @@ public class CLI {
                     print(Colors.PINK.getColor() + "> ", options1[i], Colors.NONE.getColor(), "\n");
                 } else {
                     print(Colors.PINK.getColor(),
-                            options1[i], "\t\t", Colors.YELLOW.getColor(), "> ",
+                            "> ",
+                            options1[i],
+                            "\t\t",
+                            Colors.YELLOW.getColor(),
+                            "> ",
                             (options2[i][selected2] == null ? "--?--" : options2[i][selected2]),
                             " <",
                             Colors.NONE.getColor(), "\n");
@@ -651,10 +656,10 @@ public class CLI {
         cursorOnOff(true);
     }
 
-    private String topInfo = "";
+    private Function<String, String> topInfo = null;
 
-    public void topInfoHook(Function<String, String> update) {
-        this.topInfo = update.apply(this.topInfo);
+    public void topInfoHook(Function<String, String> hook) {
+        this.topInfo = hook;
     }
 
     /**
@@ -663,7 +668,8 @@ public class CLI {
     public void clean() {
         print("\033[H\033[J", "\n");// чистить консоль
         System.out.flush();
-        print(this.topInfo);
+        if(topInfo != null)
+            print(this.topInfo.apply(null));
     }
 
     /**

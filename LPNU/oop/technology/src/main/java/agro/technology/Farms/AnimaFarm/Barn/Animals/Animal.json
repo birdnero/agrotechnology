@@ -1,6 +1,6 @@
 [
   {
-    "price": 0,
+    "price": 2,
     "Products": [
       "MAth formulas"
     ],
@@ -17,7 +17,7 @@
       "Meat"
     ],
     "canEat": [
-      "Pears"
+      "Olena🌸"
     ],
     "name": "ikik",
     "life": 0.1,

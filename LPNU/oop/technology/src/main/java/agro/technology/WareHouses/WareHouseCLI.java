@@ -5,37 +5,59 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import agro.technology.Farms.FarmSyncService;
-import agro.technology.Farms.Farm.Farm;
-import agro.technology.WareHouses.WareHouse.WareHouse;
+import agro.technology.Farms.Farm;
+import agro.technology.Farms.FarmService;
+import agro.technology.WareHouses.WareHouse.StorageCell;
 import agro.technology.WareHouses.WareHouseWithFridge.WareHouseWithFridge;
 import agro.technology.utils.CLI;
 import agro.technology.utils.CLI.Colors;
 
 @Service
-public class WareHousesConsoleService {
+public class WareHouseCLI {
+
+    private final FarmService farmService;
+
+    private final WareHouseService wareHouseService;
 
     private final CLI terminal;
 
-    private final WareHousesFactoryService wareHousesFactoryService;
-    private final FarmSyncService farmSyncService;
-
-    public WareHousesConsoleService(WareHousesFactoryService wareHousesFactoryService, CLI terminal, FarmSyncService farmSyncService) {
-        this.wareHousesFactoryService = wareHousesFactoryService;
+    public WareHouseCLI(CLI terminal, WareHouseService wareHouseService, FarmService farmService) {
         this.terminal = terminal;
-        this.farmSyncService = farmSyncService;
+        this.wareHouseService = wareHouseService;
+        this.farmService = farmService;
+    }
+
+    public String report(WareHouse wareHouse) {
+        StringBuilder str = new StringBuilder();
+
+        str.append(terminal.formatName("WareHouse"));
+        str.append(terminal.formatDataValue("located", wareHouse.getLocation()));
+        str.append(terminal.formatDataValue("size", wareHouse.getSize() + " m²"));
+        if (!wareHouse.storage.isEmpty()) {
+            str.append(terminal.formatName("storage items"));
+            for (StorageCell cell : wareHouse.storage) {
+                str.append(terminal.formatDataValue(cell.type, cell.amount));
+            }
+
+        }
+        return str.toString();
     }
 
     public WareHouse consoleCreateWareHouse() {
         int wareHouseSize = terminal.inputNumber("WareHouse size (m²): ");
         String location = terminal.input("WareHouse location: ");
 
-        /////////////////////////////////////////////////////
-        int type = terminal.initOptions(wareHousesFactoryService.getWareHousesList().toArray(), () -> {
+        List<String> wareHouseTypes = new ArrayList<>();
+        for (IWareHouseService iwareHouseService : wareHouseService.getWareHouseServices())
+            wareHouseTypes.add(iwareHouseService.getWareHouseType());
+
+        int type = terminal.initOptions(wareHouseTypes.toArray(), () -> {
         }, () -> terminal.print(terminal.optionsLabel("Select type of WareHouse")));
 
-        return wareHousesFactoryService.createWareHouse(wareHousesFactoryService.getWareHousesList().get(type),
-                location, wareHouseSize);
+        WareHouse wareHouse = wareHouseService.create(wareHouseTypes.get(type), location, wareHouseSize);
+        wareHouseService.searchWareHouseService(wareHouseTypes.get(type)).initProcesess(wareHouse);
+
+        return wareHouse;
     }
 
     public void consoleActions(Farm farm) {
@@ -46,7 +68,7 @@ public class WareHousesConsoleService {
             options.add("clean");
             options.add("transfer");
 
-            List<String> actions = wareHousesFactoryService.getActions(farm.getType());
+            List<String> actions = wareHouseService.searchWareHouseService(wareHouse.getType()).getActionsList();
 
             for (String action : actions)
                 options.add(action);
@@ -65,7 +87,7 @@ public class WareHousesConsoleService {
                     return;
 
                 case 0:
-                    if (wareHouse.fullyCleanWareHouse()) {
+                    if (wareHouseService.fullyCleanWareHouse(wareHouse)) {
                         terminal.previewing("seccefully cleaned", Colors.GREEN);
                     } else {
                         terminal.previewing("no unough money :(", Colors.RED);
@@ -79,13 +101,13 @@ public class WareHousesConsoleService {
             }
 
             if (selected > 1)
-                wareHousesFactoryService.takeAction(wareHouse, actions.get(selected - 2));
+            wareHouseService.searchWareHouseService(wareHouse.getType()).doAction(wareHouse, actions.get(selected - 2));
 
         }
     }
 
     private void consoleTransfer(Farm farm) {
-        List<Farm> farms = farmSyncService.getFarms();
+        List<Farm> farms = farmService.getFarms();
         while (true) {
             ArrayList<Farm> farmsLocal = new ArrayList<>();
 
@@ -100,7 +122,8 @@ public class WareHousesConsoleService {
                 farmsNames[i] = farmsLocal.get(i).getName();
             }
 
-            String[] products = farm.getWareHouse().getListOfStorage();
+            String[] products = wareHouseService.getListOfStorage(farm.getWareHouse());
+            
             int[] usedTo = new int[farmsNames.length];
             for (int i = 0; i < usedTo.length; i++) {
                 usedTo[i] = i;
@@ -121,7 +144,7 @@ public class WareHousesConsoleService {
             if (selected[1] == -1) {
                 terminal.previewing("no products:(", Colors.PINK);
             } else {
-                if (farm.getWareHouse().transferFood(products[selected[1]],
+                if (wareHouseService.transferFood(farm.getWareHouse(), products[selected[1]],
                         farmsLocal.get(selected[0]).getWareHouse())) {
                     terminal.statusMessage(true, "transfered");
                 } else {
@@ -132,5 +155,4 @@ public class WareHousesConsoleService {
 
         }
     }
-
 }

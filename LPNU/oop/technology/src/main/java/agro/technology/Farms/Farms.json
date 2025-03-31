@@ -2,34 +2,137 @@
   {
     "barn": {
       "type": "Olena",
-      "size": 345,
+      "size": 876,
+      "animalsAmount": 8,
+      "feedAmount": 0,
+      "productionAmount": 0
+    },
+    "type": "Animal Farm",
+    "location": "lmknjbhvg",
+    "name": "mknjbh",
+    "wareHouse": {
+      "type": "WareHouse",
+      "location": "kljkbh",
+      "size": 987,
+      "capacity": 0,
+      "freshness": 1.0,
+      "storage": [
+        {
+          "type": "Olena🌸",
+          "amount": 0
+        }
+      ]
+    },
+    "workers": [
+      {
+        "position": "Food Safety Inspector",
+        "expirience": 4,
+        "salary": 2500,
+        "duty": "Optimizing resource usage",
+        "workPlace": "mknjbh",
+        "birthDay": "24/12/1961",
+        "sex": "MALE",
+        "fullName": "Chloe Brooks"
+      },
+      {
+        "position": "Food Safety Inspector",
+        "expirience": 4,
+        "salary": 12325,
+        "duty": "Ensuring livestock health",
+        "workPlace": "mknjbh",
+        "birthDay": "21/08/1975",
+        "sex": "FEMALE",
+        "fullName": "Oliver Foster"
+      },
+      {
+        "position": "Pest Control Advisor",
+        "expirience": 9,
+        "salary": 65379,
+        "duty": "Breeding plants or livestock",
+        "workPlace": "mknjbh",
+        "birthDay": "22/05/1963",
+        "sex": "FEMALE",
+        "fullName": "Isabella Stewart"
+      },
+      {
+        "position": "Agricultural Technician",
+        "expirience": 7,
+        "salary": 5000,
+        "duty": "Ensuring livestock health",
+        "workPlace": "lmknjbhvg",
+        "birthDay": "25/05/1961",
+        "sex": "MALE",
+        "fullName": "John Smith"
+      }
+    ]
+  },
+  {
+    "field": {
+      "type": "Olena🌸",
+      "size": 34,
+      "sown": 6,
+      "ripened": 4,
+      "waterLevel": 0.98
+    },
+    "type": "Plant Farm",
+    "location": "sadsf",
+    "name": "sdf",
+    "wareHouse": {
+      "fridgeWithAccumulator": 11.000000000000004,
+      "type": "WareHouse with fridge",
+      "location": "324",
+      "size": 34,
+      "capacity": 0,
+      "freshness": 0.99,
+      "storage": [
+        {
+          "type": "Olena🌸",
+          "amount": 0
+        }
+      ]
+    },
+    "workers": [
+      {
+        "position": "Agronomist",
+        "expirience": 7,
+        "salary": 128666,
+        "duty": "Analyzing market trends",
+        "workPlace": "sdf",
+        "birthDay": "08/12/1963",
+        "sex": "FEMALE",
+        "fullName": "Sophia Allen"
+      }
+    ]
+  },
+  {
+    "barn": {
+      "type": "ikik",
+      "size": 55,
       "animalsAmount": 0,
       "feedAmount": 0,
       "productionAmount": 0
     },
-    "type": "AnimalFarm",
-    "location": "23",
-    "name": "234",
-    "specializationName": "Barn",
+    "type": "Animal Farm",
+    "location": "test",
+    "name": "myJOuse",
     "wareHouse": {
-      "fridgeWithAccumulator": 10.0,
-      "location": "324",
+      "type": "WareHouse",
+      "location": "dfg",
       "size": 234,
       "capacity": 0,
-      "freshness": 1.0,
-      "storage": [],
-      "type": "WareHouse with fridge"
+      "freshness": 0.97,
+      "storage": []
     },
     "workers": [
       {
-        "position": "Plant Breeder",
-        "expirience": 4,
-        "salary": 100860,
-        "duty": "Managing farm operations",
-        "workPlace": "234",
-        "birthDay": "09/08/2003",
+        "position": "Supply Chain Manager",
+        "expirience": 0,
+        "salary": 16399,
+        "duty": "Monitoring crop health",
+        "workPlace": "test",
+        "birthDay": "20/03/1991",
         "sex": "MALE",
-        "fullName": "Victoria Robinson"
+        "fullName": "Aiden Baker"
       }
     ]
   }
