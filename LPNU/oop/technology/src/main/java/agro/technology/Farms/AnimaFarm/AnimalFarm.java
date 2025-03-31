@@ -38,7 +38,8 @@ public class AnimalFarm extends Farm {
     }
 
     /**
-     * @param type - поле для визначення підкласу ( для правильної (де)серіалізації )
+     * @param type      - поле для визначення підкласу ( для правильної
+     *                  (де)серіалізації )
      * @param name      - ім'я ферми
      * @param location  - локація
      * @param wareHouse - склад (створити і передати)
@@ -50,9 +51,11 @@ public class AnimalFarm extends Farm {
             Barn barn) {
         super(type, location, name, wareHouse, workers, barn.getClass().getSimpleName());
         this.barn = barn;
+        
     }
 
-    // #lab використано поліморфізм (насправді він тут буквально всюди це як маленький приклад)
+    // #lab використано поліморфізм (насправді він тут буквально всюди це як
+    // маленький приклад)
     @Override
     protected void initProcessHook() {
         barn.process();

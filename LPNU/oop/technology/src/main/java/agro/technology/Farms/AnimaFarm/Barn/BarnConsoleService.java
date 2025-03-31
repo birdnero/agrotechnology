@@ -1,27 +1,34 @@
 package agro.technology.Farms.AnimaFarm.Barn;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import agro.technology.Farms.AnimaFarm.Barn.Animals.AnimalService;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 
 @Service
 public class BarnConsoleService {
     private final AnimalService animalService;
-    private final terminal terminal;
+    private final CLI terminal;
 
-    public BarnConsoleService(AnimalService animalService, terminal terminal) {
+    @Autowired
+    private ApplicationContext context;
+
+    public BarnConsoleService(AnimalService animalService, CLI terminal) {
         this.animalService = animalService;
         this.terminal = terminal;
     }
 
     public Barn create() {
         int barnType = terminal.initOptions(animalService.getAnimalTypes().toArray(), () -> {
-        }, () -> terminal.optionsLabel("Select type of animals"));
+        }, () -> terminal.print(terminal.optionsLabel("Select type of animals")));
 
-        int maxAmount = terminal.inputNumber(() -> terminal.optionsLabel("Barn max animal amount: "));
+        int maxAmount = terminal.inputNumber(() -> terminal.print(terminal.optionsLabel("Barn max animal amount: ")));
 
-        return new Barn(animalService.getAnimalTypes().get(barnType), maxAmount);
+        Barn barn = context.getBean(Barn.class);
+        barn.constructor(animalService.getAnimalTypes().get(barnType), maxAmount);
+        return barn;
     }
 }
 

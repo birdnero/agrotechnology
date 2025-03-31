@@ -18,5 +18,6 @@ public interface IFarmConsoleFactory {
             WareHouse wareHouse,
             ArrayList<Worker> workers);
 
+
     public void specializationAction(Farm farm);
 }

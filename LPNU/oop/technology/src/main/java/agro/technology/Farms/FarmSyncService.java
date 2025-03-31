@@ -20,7 +20,7 @@ import agro.technology.Farms.PlantFarm.Field.Field;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.WareHouses.WareHouseWithFridge.WareHouseWithFridge;
 import agro.technology.Worker.Worker;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -36,10 +36,10 @@ import com.google.gson.reflect.TypeToken;
 public final class FarmSyncService {
     private Gson gson;
     private static final Path farmsPath = Paths.get("src/main/java/agro/technology/Farms/Farms.json"); 
-    private final terminal terminal;
+    private final CLI terminal;
     private static List<Farm> farms;
 
-    public FarmSyncService(terminal terminal) {
+    public FarmSyncService(CLI terminal) {
         this.gson = new GsonBuilder() // ? ця штука дозволяє десеріалізувати з розтипізацією на plantFarm & AnimalFarm
                                       // з Farm
                 .registerTypeAdapter(Farm.class, new AdvancedFarmDeserializer())

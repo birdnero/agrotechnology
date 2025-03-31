@@ -1,7 +1,9 @@
 package agro.technology.Farms.PlantFarm;
 
 import java.util.ArrayList;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
+
 import org.springframework.stereotype.Service;
 
 import agro.technology.Farms.IFarmConsoleFactory;
@@ -15,13 +17,13 @@ import agro.technology.Worker.Worker;
 @Service
 public class PlantFarmConsoleService implements IFarmConsoleFactory {
 
-    private final terminal terminal;
+    private final CLI terminal;
 
     private final PlantService plantService;
 
     private final FieldConsoleService fieldConsoleService;
 
-    public PlantFarmConsoleService(FieldConsoleService fieldConsoleService, PlantService plantService, terminal terminal) {
+    public PlantFarmConsoleService(FieldConsoleService fieldConsoleService, PlantService plantService, CLI terminal) {
         this.fieldConsoleService = fieldConsoleService;
         this.plantService = plantService;
         this.terminal = terminal;
@@ -70,7 +72,7 @@ public class PlantFarmConsoleService implements IFarmConsoleFactory {
                     null,
                     () -> terminal
                             .print(terminal.colorize(
-                                    "\t" + plantService.getPlant(field.getType()).getName().toUpperCase() + " FIELD:\n", 0,
+                                    "\t" + plantService.getPlant(field.getType()).getName().toUpperCase() + " FIELD:\n", Colors.PINK,
                                     true)));
 
             if (selected[0] == -1) {
@@ -80,7 +82,7 @@ public class PlantFarmConsoleService implements IFarmConsoleFactory {
                 case 0:
 
                     if (selected[1] == -1) {
-                        terminal.previewing("no unough money or place :(", 1);
+                        terminal.previewing("no unough money or place :(", Colors.RED);
                     } else {
                         terminal.statusMessage(field.toSow(selected[1] + 1), "sowed");
                     }
@@ -91,14 +93,14 @@ public class PlantFarmConsoleService implements IFarmConsoleFactory {
                     if (field.waterField()) {
                         terminal.statusMessage(true, "watered");
                     } else {
-                        terminal.previewing("no unough money :(", 1);
+                        terminal.previewing("no unough money :(", Colors.RED);
                     }
                     break;
 
                 case 2:
                     int amount = field.canTakeRipened(farm.getWareHouse());
                     if (amount <= 0) {
-                        terminal.previewing("no production yet :(", 1);
+                        terminal.previewing("no production yet :(", Colors.PINK);
                     } else {
                         terminal.statusMessage(field.takeRipened(amount, farm.getWareHouse()), "taken");
                     }

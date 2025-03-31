@@ -11,12 +11,13 @@ import agro.technology.WareHouses.WareHousesConsoleService;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.Worker.Worker;
 import agro.technology.Worker.WorkerConsole;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class FarmConsoleService {
 
-    private final terminal terminal;
+    private final CLI terminal;
 
     private final FarmConsoleFactoryService farmConsoleFactoryService;
     private final WareHousesConsoleService wareHousesConsoleService;
@@ -27,7 +28,7 @@ public class FarmConsoleService {
             FarmConsoleFactoryService farmConsoleFactoryService,
             WareHousesConsoleService wareHousesConsoleService,
             WorkerConsole workerConsole,
-            terminal terminal,
+            CLI terminal,
             FarmSyncService farmSyncService) {
         this.farmConsoleFactoryService = farmConsoleFactoryService;
         this.wareHousesConsoleService = wareHousesConsoleService;
@@ -41,11 +42,11 @@ public class FarmConsoleService {
         ArrayList<String> farmTypes = new ArrayList<>(farmConsoleFactoryService.getFarmsList());
 
         int type = terminal.initOptions(farmTypes.toArray(), () -> {
-        }, () -> terminal.optionsLabel("select type of farm"));
+        }, () -> terminal.print(terminal.optionsLabel("select type of farm")));
 
-        String name = terminal.input(() -> terminal.optionsLabel("type name of farm"));
+        String name = terminal.input(() -> terminal.print(terminal.optionsLabel("type name of farm")));
 
-        String location = terminal.input(() -> terminal.optionsLabel("location"));
+        String location = terminal.input(() -> terminal.print(terminal.optionsLabel("location")));
 
         ////////////////////////////////////////////////////
         WareHouse wareHouse = wareHousesConsoleService.consoleCreateWareHouse();
@@ -57,7 +58,7 @@ public class FarmConsoleService {
 
         farmSyncService.syncFarms();
 
-        terminal.previewing("seccefully created!", 0);
+        terminal.previewing("seccefully created!", Colors.PINK);
 
         terminal.CtrlC(false);
     }
@@ -72,7 +73,7 @@ public class FarmConsoleService {
             options.add("workers");
 
             int selected = terminal.initOptions(options.toArray(), null, () -> {
-                terminal.print(terminal.colorize("\tACTIONS:\n", 0, true));
+                terminal.print(terminal.colorize("\tACTIONS:\n", Colors.PINK, true));
             });
             if (selected == -1) {
                 return;
@@ -143,7 +144,7 @@ public class FarmConsoleService {
                     farmSyncService.getFarms().remove(farmIndex);
                     terminal.clean();
                     farmSyncService.syncFarms();
-                    terminal.previewing("seccefully deleted", 0);
+                    terminal.previewing("seccefully deleted", Colors.PINK);
                 }
             }
         }

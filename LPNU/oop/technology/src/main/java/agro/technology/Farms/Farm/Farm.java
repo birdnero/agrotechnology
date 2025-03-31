@@ -6,11 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.gson.annotations.Expose;
 
-import agro.technology.Budget.BudgetService;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.Worker.Worker;
 import agro.technology.utils.HasReport;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +20,7 @@ import lombok.Setter;
 @Setter
 public abstract class Farm implements HasReport {
     // #lab використано інкапсуляцію (її використано практично всюди)
-    private terminal terminal;
+    private CLI terminal;
 
     @Expose
     private String type;
@@ -36,8 +35,6 @@ public abstract class Farm implements HasReport {
     @Expose
     protected ArrayList<Worker> workers;
     
-
-    private BudgetService budgetService;
 
     protected Farm(
             String type,
@@ -57,9 +54,8 @@ public abstract class Farm implements HasReport {
     }
 
     @Autowired
-    public Farm(terminal terminal, BudgetService budgetService){
+    public Farm(CLI terminal){
         this.terminal = terminal;
-        this.budgetService = budgetService;
     }
 
     public void initProcess() {
@@ -75,7 +71,6 @@ public abstract class Farm implements HasReport {
     public String report() {
         StringBuilder str = new StringBuilder();
         str.append(terminal.formatName("Farm \"" + this.name + "\""));
-        str.append(terminal.formatDataValue("budget", budgetService.getBudget()));
         str.append(terminal.formatDataValue("location", this.location));
 
         str.append(this.wareHouse.report());

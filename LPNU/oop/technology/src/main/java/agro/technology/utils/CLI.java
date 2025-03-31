@@ -2,24 +2,115 @@ package agro.technology.utils;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.IntStream;
 
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.springframework.stereotype.Service;
-import agro.technology.Budget.BudgetService;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
 //створює опції вибору в терміналі (просто красиво)
 @Service
-final public class terminal {
+public class CLI {
 
-    private final BudgetService budgetService;
+    // jLine - бібліотека для зчитування клавіш
+    private Terminal terminal;
 
-    public terminal(BudgetService budgetService) {
-        this.budgetService = budgetService;
+    public CLI() {
+        try {
+            this.topInfo = "";
+            this.terminal = TerminalBuilder.builder().system(true).build();
+            ;
+        } catch (IOException e) {
+            errorExit("terminal initialization error(");
+        }
+    }
+
+    public static class CLIException extends RuntimeException {
+        public CLIException(String message) {
+            super(message);
+        }
+    }
+
+    public static enum Colors {
+        BOLD(1),
+        UNDERLINE(4),
+        NEGATIVE(7),
+
+        BLACK(30),
+        RED(31),
+        GREEN(32),
+        YELLOW(33),
+        BLUE(34),
+        PINK(35),
+        BlUE_NEON(36),
+
+        BACKGROUND_RED(41),
+        BACKGROUND_GREEN(42),
+        BACKGROUND_YELLOW(43),
+        BACKGROUND_BLUE(44),
+        BACKGROUND_PINK(45),
+        BACKGROUND_BLUE_NEON(46),
+        BACKGROUND_WHITE(47),
+
+        NONE(0);
+
+        private final int code;
+
+        Colors(int code) {
+            this.code = code;
+        }
+
+        public int getSimpleCode() {
+            return code;
+        }
+
+        public String getColor() {
+            return "\033[" + code + "m";
+        }
+
+        public String getColorBold() {
+            return "\033[1;" + code + "m";
+        }
+    }
+
+    public static enum Keys {
+        UP(65),
+        DOWN(66),
+        RIGHT(67),
+        LEFT(68),
+        ENTER(10),
+        BACKSPACE(127),
+        UNDEFINED(-1);
+
+        private final int code;
+
+        Keys(int code) {
+            this.code = code;
+        }
+
+        public int getKey() {
+            return code;
+        }
+
+        public static Keys defineKey(int code) {
+            for (Keys key : Keys.values()) {
+                if (key.getKey() == code) {
+                    return key;
+                }
+            }
+            return UNDEFINED;
+        }
+    }
+
+    // метод для зчитування
+    protected int readKey() throws IOException {
+        return this.terminal.reader().read();
     }
 
     /**
@@ -30,46 +121,50 @@ final public class terminal {
      *                  опціями і не зникає
      * @return повертає індекс обраного варіанту або -1 при backspace = null
      */
-    public <T> int initOptions(T[] options, Runnable backSpaceAction, Runnable topAction) {
+    public <T> int initOptions(T[] options, Runnable backSpaceAction, Runnable topAction) throws NullPointerException {
         int selected = 0;
+        if (options.length == 0)
+            return -1;
         clean();
         while (true) {
             try {
                 cursorOnOff(false);
                 printOptions(options, selected, null, 0, new int[] {}, topAction);
 
-                // jLine - бібліотека для зчитування клавіш
-                Terminal console = TerminalBuilder.builder().system(true).build();
+                int key = readKey();
 
-                // метод для зчитування
-                int key = console.reader().read();
-
-                switch (key) {
-                    case 65: // Key arrow up
+                switch (Keys.defineKey(key)) {
+                    case Keys.UP -> {
                         if (selected > 0)
                             selected--;
-                        break;
-                    case 66: // Key arrow down
+                    }
+                    case Keys.DOWN -> {
                         if (selected < options.length - 1)
                             selected++;
-                        break;
-                    case 10: // Enter
+                    }
+                    case Keys.ENTER -> {
                         cursorOnOff(true);
                         clean();
-                        return selected;
+                        if (options[selected] != null)
+                            return selected;
+                        else
+                            return -1;
+                    }
 
-                    case 127: // backspace
+                    case Keys.BACKSPACE -> {
                         if (backSpaceAction != null) {
                             backSpaceAction.run();
                         }
                         return -1;
 
-                    default:
-                        break;
+                    }
+
+                    default -> {
+                    }
                 }
 
             } catch (IOException e) {
-                System.out.println("Error in terminalOptions :/ --> " + e);
+                previewing("cli: printOptions1 error", Colors.RED);
                 continue;
             }
             cursorOnOff(true);
@@ -88,10 +183,12 @@ final public class terminal {
      *         повертає [-1, -1]
      */
     public <T, V> int[] initOptions(T[] options1, V[] options2, int[] usedTo, Runnable backSpaceAction,
-            Runnable topAction) {
+            Runnable topAction) throws NullPointerException {
         Arrays.sort(usedTo);
         int selected1 = 0;
         int selected2 = 0;
+        if (options1.length == 0)
+            return new int[] { -1, -1 };
 
         while (true) {
             try {
@@ -99,43 +196,44 @@ final public class terminal {
 
                 printOptions(options1, selected1, options2, selected2, usedTo, topAction);
 
-                Terminal terminal = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
-                                                                                    // клавіш
-                int key = terminal.reader().read(); // метод для зчитування
+                // клавіш
+                int key = readKey(); // метод для зчитування
 
-                switch (key) {
-                    case 65: // Key arrow up
+                switch (Keys.defineKey(key)) {
+                    case Keys.UP:
                         if (selected1 > 0) {
                             selected1--;
                         }
                         break;
-                    case 66: // Key arrow down
+                    case Keys.DOWN:
                         if (selected1 < options1.length - 1) {
                             selected1++;
                         }
                         break;
 
-                    case 67: // Key arrow right
+                    case Keys.RIGHT:
                         if (selected2 < options2.length - 1) {
                             selected2++;
                         }
                         break;
-                    case 68: // Key arrow left
+                    case Keys.LEFT:
                         if (selected2 > 0) {
                             selected2--;
                         }
                         break;
 
-                    case 127: // backspace
+                    case Keys.BACKSPACE:
                         if (backSpaceAction != null) {
                             backSpaceAction.run();
                         }
                         return new int[] { -1, -1 };
 
-                    case 10: // Enter
+                    case Keys.ENTER:
                         cursorOnOff(true);
                         clean();
-                        if (Arrays.binarySearch(usedTo, selected1) >= 0) {
+                        if (options1[selected1] == null)
+                            return new int[] { -1, -1 };
+                        if (Arrays.binarySearch(usedTo, selected1) >= 0 && options2 != null && options2.length > 0) {
                             return new int[] { selected1, selected2 };
                         } else {
                             return new int[] { selected1, -1 };
@@ -146,7 +244,7 @@ final public class terminal {
                 }
 
             } catch (IOException e) {
-                System.out.println("Error in terminalOptions :/ --> " + e);
+                previewing("cli: printOptions2 error", Colors.RED);
                 continue;
             }
             cursorOnOff(true);
@@ -175,10 +273,13 @@ final public class terminal {
         for (int i = 0; i < options1.length; i++) {
             if (i == selected1) {
                 if (options2 == null || options2.length == 0 || Arrays.binarySearch(usedTo, selected1) < 0) {
-                    print("\033[35m> ", options1[i], "\033[0m", "\n");
+                    print(Colors.PINK.getColor(), "> ", (options1[i] == null ? "--?--" : options1[i]),
+                            Colors.NONE.getColor(), "\n");
                 } else {
-                    print("\033[35m> ", options1[i], "\t\t", "\033[33m", "> ", options2[selected2], " <",
-                            "\033[0m", "\n");
+                    print(Colors.PINK.getColor(), "> ", (options1[i] == null ? "--?--" : options1[i]), "\t\t",
+                            Colors.YELLOW.getColor(), "> ",
+                            (options2[selected2] == null ? "--?--" : options2[selected2]), " <",
+                            Colors.NONE.getColor(), "\n");
 
                 }
             } else {
@@ -208,9 +309,11 @@ final public class terminal {
         int selected1 = 0;
         int selected2 = 0;
 
-        if (options1.length != matrix2opt.length) {
+        if ((options1 == null || matrix2opt == null) || options1.length != matrix2opt.length) {
             errorExit("list initOptions error");
         }
+        if (options1.length == 0)
+            return new int[] { -1, -1 };
 
         while (true) {
             try {
@@ -218,56 +321,68 @@ final public class terminal {
 
                 printOptions(options1, selected1, matrix2opt, selected2, topAction);
 
-                Terminal terminal = TerminalBuilder.builder().system(true).build(); // jLine - бібліотека для зчитування
-                                                                                    // клавіш
-                int key = terminal.reader().read(); // метод для зчитування
+                int key = readKey(); // метод для зчитування
 
-                switch (key) {
-                    case 65: // Key arrow up
+                switch (Keys.defineKey(key)) {
+                    case Keys.UP:
                         if (selected1 > 0) {
                             selected1--;
-                            selected2 = 0;
+                            if (matrix2opt[selected1] == null)
+                                selected2 = -1;
+                            if (matrix2opt[selected1].length - 1 < selected2)
+                                selected2 = matrix2opt[selected1].length - 1;
+                            else if (matrix2opt[selected1].length > 0 && selected2 == -1)
+                                selected2 = 0;
                         }
                         break;
-                    case 66: // Key arrow down
+                    case Keys.DOWN:
                         if (selected1 < options1.length - 1) {
                             selected1++;
-                            selected2 = 0;
+                            if (matrix2opt[selected1] == null)
+                                selected2 = -1;
+                            else if (matrix2opt[selected1].length - 1 < selected2)
+                                selected2 = matrix2opt[selected1].length - 1;
+                            else if (matrix2opt[selected1].length > 0 && selected2 == -1)
+                                selected2 = 0;
                         }
                         break;
 
-                    case 67: // Key arrow right
+                    case Keys.RIGHT:
                         if (selected2 < matrix2opt[selected1].length - 1) {
                             selected2++;
                         }
                         break;
-                    case 68: // Key arrow left
+                    case Keys.LEFT:
                         if (selected2 > 0) {
                             selected2--;
                         }
                         break;
 
-                    case 127: // backspace
+                    case Keys.BACKSPACE:
                         if (backSpaceAction != null) {
                             backSpaceAction.run();
                         }
                         return new int[] { -1, -1 };
 
-                    case 10: // Enter
+                    case Keys.ENTER:
                         cursorOnOff(true);
                         clean();
-                        if (matrix2opt[selected1] == null || matrix2opt[selected1].length == 0) {
-                            return new int[] { selected1, -1 };
-                        } else {
-                            return new int[] { selected1, selected2 };
+                        if (options1[selected1] == null)
+                            return new int[] { -1, -1 };
+                        if (matrix2opt[selected1] == null ||
+                                matrix2opt[selected1].length == 0 ||
+                                matrix2opt[selected1].length < selected2 + 1
+                                || matrix2opt[selected1][selected2] == null) {
+                            return new int[] { -1, -1 };
                         }
+                        return new int[] { selected1, selected2 };
 
                     default:
                         break;
                 }
 
             } catch (IOException e) {
-                System.out.println("Error in terminalOptions :/ --> " + e);
+                previewing("cli: printOptions3 error", Colors.RED);
                 continue;
             }
             cursorOnOff(true);
@@ -293,15 +408,174 @@ final public class terminal {
         for (int i = 0; i < options1.length; i++) {
             if (i == selected1) {
                 if (options2 == null || options2[i] == null || options2[i].length == 0) {
-                    print("\033[35m> ", options1[i], "\033[0m", "\n");
+                    print(Colors.PINK.getColor() + "> ", options1[i], Colors.NONE.getColor(), "\n");
                 } else {
-                    print("\033[35m> ", options1[i], "\t\t", "\033[33m", "> ", options2[i][selected2], " <",
-                            "\033[0m", "\n");
+                    print(Colors.PINK.getColor(),
+                            options1[i], "\t\t", Colors.YELLOW.getColor(), "> ",
+                            (options2[i][selected2] == null ? "--?--" : options2[i][selected2]),
+                            " <",
+                            Colors.NONE.getColor(), "\n");
 
                 }
             } else {
                 print("  ", options1[i], "\n");
             }
+        }
+    }
+
+    /**
+     * <h3>Ініціалізація мульти-вибору вертикально + горизонтально (різний для
+     * всіх)</h3>
+     * 
+     * @param options1   вертикальні опції
+     * @param matrix2opt горизонтальні опції (кожен масив для відповідного рядка)
+     *                   [пусті масив або null якщо горизонтального вибору
+     *                   непотрібно]
+     * @return повертає масив - [ індекс опцій2 ]
+     *         [-1] при null або різних розмірах або backspace
+     *         масив вибраних у кожному рядку
+     */
+    public <T, V> List<Integer> multiOptions(
+            T[] options1,
+            String[][] matrix2opt,
+            Runnable backSpaceAction,
+            Runnable topAction) {
+
+        int selected1 = 0;
+        Integer[] selected2 = IntStream
+                .iterate(-1, s -> s)
+                .limit(matrix2opt.length)
+                .boxed()
+                .toArray(Integer[]::new);
+
+        if ((options1 == null ||
+                matrix2opt == null) ||
+                options1.length != matrix2opt.length ||
+                options1.length == 0)
+            return List.of(-1);
+
+        while (true) {
+            try {
+                cursorOnOff(false);
+
+                if (selected2[selected1] == -1)
+                    selected2[selected1] = 0;
+                printOptions(options1, selected1, matrix2opt, List.of(selected2), topAction);
+
+                int key = readKey(); // метод для зчитування
+
+                switch (Keys.defineKey(key)) {
+                    case Keys.UP:
+                        if (selected1 > 0)
+                            selected1--;
+                        break;
+                    case Keys.DOWN:
+                        if (selected1 < options1.length - 1)
+                            selected1++;
+                        break;
+
+                    case Keys.RIGHT:
+                        if (selected2[selected1] < matrix2opt[selected1].length - 1) {
+                            selected2[selected1]++;
+                        }
+                        break;
+                    case Keys.LEFT:
+                        if (selected2[selected1] > 0) {
+                            selected2[selected1]--;
+                        }
+                        break;
+
+                    case Keys.BACKSPACE:
+                        if (backSpaceAction != null) {
+                            backSpaceAction.run();
+                        }
+                        return List.of(-1);
+
+                    case Keys.ENTER:
+                        cursorOnOff(true);
+                        clean();
+
+                        if (options1[selected1] == null ||
+                                matrix2opt[selected1] == null ||
+                                matrix2opt[selected1].length == 0 ||
+                                matrix2opt[selected1].length < selected2[selected1] + 1) {
+                            return List.of(-1);
+                        }
+                        List<Integer> selectedList = List.of(selected2);
+                        if (selectedList.contains(-1)) {
+                            previewing("unsetted " + options1[selectedList.indexOf(-1)], Colors.YELLOW);
+                        } else
+                            return List.of(selected2);
+
+                    default:
+                        break;
+                }
+
+            } catch (IOException e) {
+                previewing("cli: printOptions3 error", Colors.RED);
+                continue;
+            }
+            cursorOnOff(true);
+        }
+    }
+
+    /**
+     * <h3>внутрішній метод для відображення мульти списку</h3> (горизонтальний
+     * множинний різний)
+     * 
+     * @param options1  - вертикальні опції
+     * @param selected1 - індекс вибраного у вертикальних опціях
+     * @param options2  - горизонтальні опції
+     * @param selected2 - індекс вибраного у горизонтальних опціях
+     * @param topAction - дія перед відображення опцій
+     */
+    private <T, V> void printOptions(T[] options1, int selected1, V[][] options2, List<Integer> selected2,
+            Runnable topAction) {
+        clean();
+        if (topAction != null) {
+            topAction.run();
+        }
+
+        for (int i = 0; i < options1.length; i++) {
+            if (selected1 == i) {
+
+            }
+            if (options2 == null || options2[i] == null || options2[i].length == 0) {
+                if (selected1 == i)
+                    print(Colors.PINK.getColor() + "> ", options1[i], Colors.NONE.getColor(), "\n");
+                else
+                    print("  ", options1[i], "\n");
+
+            } else {
+                String selected2element = "--?--";
+                if (selected2.get(i) == -1)
+                    selected2element = "";
+
+                else if (options2[i][selected2.get(i)] != null)
+                    selected2element = options2[i][selected2.get(i)].toString();
+
+                if (selected1 == i)
+                    print(Colors.PINK.getColor(),
+                            "> ",
+                            options1[i],
+                            "\t\t",
+                            Colors.NONE.getColor(),
+                            Colors.YELLOW.getColor(),
+                            "> ",
+                            selected2element,
+                            " <",
+                            Colors.NONE.getColor(),
+                            "\n");
+                else
+                    print("  ",
+                            Colors.NONE.getColor(),
+                            options1[i],
+                            "\t\t  ",
+                            selected2element,
+                            "  \n");
+
+            }
+
         }
     }
 
@@ -320,18 +594,22 @@ final public class terminal {
 
     public <T, V> String formatDataValue(T data, V value) {
         StringBuilder str = new StringBuilder();
-        str.append("\033[36m");
+        str.append(Colors.BlUE_NEON.getColor());
         str.append(data);
-        str.append("\033[0m: ");
+        str.append(Colors.NONE.getColor());
+        str.append(": ");
 
-        str.append("\033[33m");
+        str.append(Colors.YELLOW.getColor());
         str.append(value);
-        str.append("\033[0m\n");
+        str.append(Colors.NONE.getColor());
+        str.append("\n");
         return str.toString();
     }
 
     public String formatName(String name) {
-        return "\033[34m\t\t" + name + ":\n\033[0m";
+        if (name == null)
+            name = "--?--";
+        return Colors.BlUE_NEON.getColor() + "\t\t" + name + ":\n" + Colors.NONE.getColor();
     }
 
     private String getCentered(String text, int offset) {
@@ -344,26 +622,25 @@ final public class terminal {
      * @param message Повідомлення, яке буде виведено.
      * @param color   0 - рожевий, 1 - червоний, 2 - зелений.
      */
-    public void previewing(String message, int color) {
-        String[] colors = { "\033[35m", "\033[31m", "\033[32m" };
+    public void previewing(String message, Colors color) {
 
-        cleanBudgetToo();
+        cleanWithTopAction();
         cursorOnOff(false);
         int length = message.length() + 10;
 
         String[] lines = {
                 getCentered("*".repeat(length), 0),
-                getCentered("*    " + colors[color] + message + "\033[0m   *  ", 5),
+                getCentered("*    " + color.getColor() + message + Colors.NONE.getColor() + "  *  ", 5),
                 getCentered("*".repeat(length), 0),
         };
         try {
             for (int i = length - 1; i >= 0; i--) {
                 Thread.sleep(40 + i * 2);
-                cleanBudgetToo();
+                cleanWithTopAction();
 
                 print(lines[0].substring(0, lines[0].length() - 1 - i), "\n");
                 print(lines[1].substring(0, lines[1].length() - 1 - i), "\n");
-                print("\033[0m");
+                print(Colors.NONE.getColor());
                 print(lines[2].substring(0, lines[2].length() - 1 - i), "\n");
             }
             Thread.sleep(200);
@@ -374,23 +651,32 @@ final public class terminal {
         cursorOnOff(true);
     }
 
+    private String topInfo = "";
+
+    public void topInfoHook(Function<String, String> update) {
+        this.topInfo = update.apply(this.topInfo);
+    }
+
     /**
      * очищує консоль але залишає бюджет
      */
     public void clean() {
         print("\033[H\033[J", "\n");// чистить консоль
         System.out.flush();
-        printBudget();
+        print(this.topInfo);
     }
 
     /**
      * повністю очищує консоль
      */
-    private void cleanBudgetToo() {
+    private void cleanWithTopAction() {
         print("\033[H\033[J", "\n");// чистить консоль
         System.out.flush();
     }
 
+    /**
+     * відключить курсор якщо передати false і включить якщо true
+     */
     public void cursorOnOff(boolean onOff) {
         try {
             if (onOff) {
@@ -436,16 +722,21 @@ final public class terminal {
         return false;
     }
 
+    /**
+     * вихід через помилку з виводом
+     */
     public void errorExit(String message) {
-        previewing(message, 1);
-        cleanBudgetToo();
-        System.exit(1);
-        return;
+        previewing(message, Colors.RED);
+        cleanWithTopAction();
+        throw new CLIException(message);
     }
 
+    /**
+     * мирний вихід з програми
+     */
     public void exit() {
-        previewing("thanks :)", 0);
-        cleanBudgetToo();
+        previewing("thanks :)", Colors.PINK);
+        cleanWithTopAction();
         System.exit(0);
         return;
     }
@@ -457,6 +748,8 @@ final public class terminal {
      */
     public void CtrlC(boolean onOff) {
         if (onOff) {
+            // я забув як це працює (короче чат джпт сказав що воно блокує CtrC вихід, я
+            // перевірив і реально блокує)
             Signal.handle(new Signal("INT"), new SignalHandler() {
                 @Override
                 public void handle(Signal signal) {
@@ -481,7 +774,7 @@ final public class terminal {
                 Terminal console = TerminalBuilder.terminal();
                 LineReader reader = LineReaderBuilder.builder().terminal(console).build();
 
-                str = reader.readLine(colorize(message, 0, false));
+                str = reader.readLine(colorize(message, Colors.PINK, false));
             }
             clean();
             return str;
@@ -515,7 +808,7 @@ final public class terminal {
 
     public int inputNumber(String message) {
         clean();
-        print(colorize(message, 0, false));
+        print(colorize(message, Colors.PINK, false));
         cursorOnOff(true);
         try {
             Terminal console = TerminalBuilder.terminal();
@@ -549,29 +842,14 @@ final public class terminal {
 
     /**
      * 
-     * @param color    0 - pink, 1 - red, 2 - blueNeon, 3 - yellow, 4 - green
      * @param boldness показує чи потрібно робити жирний шрифт
      */
-    public String colorize(String text, int color, boolean boldness) {
-        String[] colors = { "\033[35m", "\033[31m", "\033[36m", "\033[33m", "\033[32m" };
-        String[] colorsBold = { "\033[1;35m", "\033[1;31m", "\033[1;36m", "\033[1;33m", "\033[1;32m" };
-        if (boldness) {
-            return colorsBold[color] + text + "\033[0m";
-
-        }
-        return colors[color] + text + "\033[0m";
-    }
-
-    /**
-     * просто потрібно завжди бачити бюджет
-     */
-    private void printBudget() {
-        StringBuilder str = new StringBuilder();
-        str.append(colorize("BUDGET", 2, true));
-        str.append(": \t\t\t");
-        str.append(colorize(budgetService.getBudget() + "$", 3, true));
-        str.append("\n");
-        print(str.toString());
+    public String colorize(String text, Colors color, boolean boldness) {
+        if (text == null)
+            text = "--?--";
+        if (color == null)
+            color = Colors.NONE;
+        return (boldness ? color.getColorBold() : color.getColor()) + text + Colors.NONE.getColor();
     }
 
     /**
@@ -581,16 +859,18 @@ final public class terminal {
      */
     public void statusMessage(boolean status, String state) {
         if (status) {
-            previewing("seccefully " + state, 2);
+            previewing("seccefully " + state, Colors.GREEN);
         } else {
-            previewing("something went wrong", 1);
+            previewing("something went wrong", Colors.RED);
         }
     }
 
     /**
      * шаблон для label для опцій
      */
-    public void optionsLabel(String label) {
-        print(colorize("\t" + label.toUpperCase() + "\n", 0, true));
+    public String optionsLabel(String label) {
+        if (label == null)
+            label = "--?--";
+        return colorize("\t" + label.toUpperCase() + "\n", Colors.PINK, true);
     }
 }

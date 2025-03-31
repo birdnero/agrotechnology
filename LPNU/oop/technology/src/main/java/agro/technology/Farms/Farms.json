@@ -1,1 +1,36 @@
-[]
+[
+  {
+    "barn": {
+      "type": "Olena",
+      "size": 345,
+      "animalsAmount": 0,
+      "feedAmount": 0,
+      "productionAmount": 0
+    },
+    "type": "AnimalFarm",
+    "location": "23",
+    "name": "234",
+    "specializationName": "Barn",
+    "wareHouse": {
+      "fridgeWithAccumulator": 10.0,
+      "location": "324",
+      "size": 234,
+      "capacity": 0,
+      "freshness": 1.0,
+      "storage": [],
+      "type": "WareHouse with fridge"
+    },
+    "workers": [
+      {
+        "position": "Plant Breeder",
+        "expirience": 4,
+        "salary": 100860,
+        "duty": "Managing farm operations",
+        "workPlace": "234",
+        "birthDay": "09/08/2003",
+        "sex": "MALE",
+        "fullName": "Victoria Robinson"
+      }
+    ]
+  }
+]

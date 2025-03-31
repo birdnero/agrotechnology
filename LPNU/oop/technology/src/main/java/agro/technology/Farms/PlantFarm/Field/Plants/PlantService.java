@@ -15,16 +15,17 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class PlantService {
     private Path plantJson = Path.of("src/main/java/agro/technology/Farms/PlantFarm/Field/Plants/Plants.json");
     private HashMap<String, Plant> plants;
     private Gson gson;
-    private final terminal terminal;
+    private final CLI terminal;
 
-    public PlantService(terminal terminal) {
+    public PlantService(CLI terminal) {
         this.terminal = terminal;
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 
@@ -64,7 +65,7 @@ public class PlantService {
     public Plant getPlant(String name) {
         Plant plant = plants.get(name);
         if (plant == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined plant", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined plant", Colors.RED);
         return plant;
     }
 
@@ -72,7 +73,7 @@ public class PlantService {
         try (FileWriter file = new FileWriter(plantJson.toFile())) {
             gson.toJson(plants.values(), file);
         } catch (Exception e) {
-            terminal.previewing(this.getClass().getSimpleName() + ": sync plants error", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": sync plants error", Colors.RED);
         }
     }
 }

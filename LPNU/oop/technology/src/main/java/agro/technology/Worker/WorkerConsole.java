@@ -7,15 +7,16 @@ import org.springframework.stereotype.Service;
 
 import agro.technology.Farms.Farm.Farm;
 import agro.technology.Worker.Person.Sex;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class WorkerConsole {
 
     private final WorkerFactory workerFactory;
-    private final terminal terminal;
+    private final CLI terminal;
 
-    public WorkerConsole(terminal terminal, WorkerFactory workerFactory) {
+    public WorkerConsole(CLI terminal, WorkerFactory workerFactory) {
         this.terminal = terminal;
         this.workerFactory = workerFactory;
     }
@@ -64,7 +65,7 @@ public class WorkerConsole {
                     options,
                     included,
                     null,
-                    () -> terminal.print(terminal.colorize("\tWORKERS:\n", 0, true)));
+                    () -> terminal.print(terminal.colorize("\tWORKERS:\n", Colors.PINK, true)));
 
             if (selected[0] == -1) {
                 return;
@@ -91,7 +92,7 @@ public class WorkerConsole {
 
                     case 1:
                         int position = terminal.initOptions(workerFactory.getPositions(), null,
-                                () -> terminal.print(terminal.colorize("\tSelect position\n", 0, false)));
+                                () -> terminal.print(terminal.colorize("\tSelect position\n", Colors.PINK, false)));
 
                         if (position == -1) {
                             break;
@@ -102,7 +103,7 @@ public class WorkerConsole {
 
                     case 2:
                         int duty = terminal.initOptions(workerFactory.getDuties(), null,
-                                () -> terminal.print(terminal.colorize("\tSelect duty\n", 0, false)));
+                                () -> terminal.print(terminal.colorize("\tSelect duty\n", Colors.PINK, false)));
 
                         if (duty == -1) {
                             break;
@@ -132,14 +133,14 @@ public class WorkerConsole {
             }
 
             int position = terminal.initOptions(workerFactory.getPositions(), null,
-                    () -> terminal.print(terminal.colorize("\tSelect position\n", 0, false)));
+                    () -> terminal.print(terminal.colorize("\tSelect position\n", Colors.PINK, false)));
 
             if (position == -1) {
                 return;
             }
 
             int duty = terminal.initOptions(workerFactory.getDuties(), null,
-                    () -> terminal.print(terminal.colorize("\tSelect duty\n", 0, false)));
+                    () -> terminal.print(terminal.colorize("\tSelect duty\n", Colors.PINK, false)));
 
             if (duty == -1) {
                 return;

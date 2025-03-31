@@ -8,40 +8,40 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class AnimalService {
-    private Path animalJson = Path.of("/src/main/java/agro/technology/Farms/AnimaFarm/Barn/Animals/Animals.json");
+    private Path animalJson = Path.of("src/main/java/agro/technology/Farms/AnimaFarm/Barn/Animals/Animal.json");
     private HashMap<String, Animal> animals;
     private Gson gson;
 
-    private terminal terminal;
+    private CLI terminal;
 
-    @Autowired
-    public AnimalService(terminal terminal){
+    public AnimalService(CLI terminal) {
         this.terminal = terminal;
+        this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
+        loadAnimals();
     }
 
-    public AnimalService() {
-        this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
-
+    public void loadAnimals() {
         try (FileReader file = new FileReader(animalJson.toFile())) {
             Type typeToken = new TypeToken<List<Animal>>() {
             }.getType();
 
             List<Animal> animals = gson.fromJson(file, typeToken);
             HashMap<String, Animal> animalsMap = new HashMap<>();
-            for (Animal animal : animals)
+            for (Animal animal : animals) {
+                animal.setTerminal(terminal);
                 animalsMap.put(animal.getName(), animal);
+            }
             this.animals = animalsMap;
 
         } catch (IOException e) {
@@ -58,7 +58,7 @@ public class AnimalService {
     }
 
     public void addAnimal(String name, int price, double life, String[] products, String[] canEat, int sellPrice) {
-        animals.put(name, new Animal(price, products, canEat, name, life, sellPrice));
+        animals.put(name, new Animal(price, products, canEat, name, life, sellPrice, terminal));
         sync();
     }
 
@@ -70,16 +70,31 @@ public class AnimalService {
     public Animal getAnimal(String name) {
         Animal animal = animals.get(name);
         if (animal == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined animal", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined animal", Colors.RED);
         return animal;
     }
 
+    public void setAnimal(Animal animal, String oldName) {
+        animals.remove(oldName);
+        animals.put(animal.getName(), animal);
+        sync();
+    }
 
-    private void sync(){
-         try (FileWriter file = new FileWriter(animalJson.toFile())) {
+    public void deleteAnimal(String name) {
+        Animal animal = animals.get(name);
+        if (animal == null)
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined animal", Colors.RED);
+        else
+        animals.remove(animal.getName());
+        sync();
+    }
+
+    private void sync() {
+        try (FileWriter file = new FileWriter(animalJson.toFile())) {
             gson.toJson(animals.values(), file);
+            // loadAnimals();
         } catch (Exception e) {
-            terminal.previewing(this.getClass().getSimpleName() + ": sync animals error", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": sync animals error", Colors.RED);
         }
     }
 }

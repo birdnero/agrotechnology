@@ -9,17 +9,18 @@ import agro.technology.Farms.FarmSyncService;
 import agro.technology.Farms.Farm.Farm;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.WareHouses.WareHouseWithFridge.WareHouseWithFridge;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class WareHousesConsoleService {
 
-    private final terminal terminal;
+    private final CLI terminal;
 
     private final WareHousesFactoryService wareHousesFactoryService;
     private final FarmSyncService farmSyncService;
 
-    public WareHousesConsoleService(WareHousesFactoryService wareHousesFactoryService, terminal terminal, FarmSyncService farmSyncService) {
+    public WareHousesConsoleService(WareHousesFactoryService wareHousesFactoryService, CLI terminal, FarmSyncService farmSyncService) {
         this.wareHousesFactoryService = wareHousesFactoryService;
         this.terminal = terminal;
         this.farmSyncService = farmSyncService;
@@ -31,7 +32,7 @@ public class WareHousesConsoleService {
 
         /////////////////////////////////////////////////////
         int type = terminal.initOptions(wareHousesFactoryService.getWareHousesList().toArray(), () -> {
-        }, () -> terminal.optionsLabel("Select type of WareHouse"));
+        }, () -> terminal.print(terminal.optionsLabel("Select type of WareHouse")));
 
         return wareHousesFactoryService.createWareHouse(wareHousesFactoryService.getWareHousesList().get(type),
                 location, wareHouseSize);
@@ -57,7 +58,7 @@ public class WareHousesConsoleService {
             int selected = terminal.initOptions(
                     options.toArray(),
                     null,
-                    () -> terminal.print(terminal.colorize("\tWAREHOUSE:\n", 0, true)));
+                    () -> terminal.print(terminal.colorize("\tWAREHOUSE:\n", Colors.PINK, true)));
 
             switch (selected) {
                 case -1:
@@ -65,9 +66,9 @@ public class WareHousesConsoleService {
 
                 case 0:
                     if (wareHouse.fullyCleanWareHouse()) {
-                        terminal.previewing("seccefully cleaned", 2);
+                        terminal.previewing("seccefully cleaned", Colors.GREEN);
                     } else {
-                        terminal.previewing("no unough money :(", 1);
+                        terminal.previewing("no unough money :(", Colors.RED);
                     }
                     break;
                 case 1:
@@ -106,25 +107,25 @@ public class WareHousesConsoleService {
             }
 
             if (products.length == 0) {
-                terminal.previewing("no products:(", 1);
+                terminal.previewing("no products:(", Colors.RED);
                 return;
             }
 
             int[] selected = terminal.initOptions(farmsNames, products, usedTo, null,
-                    () -> terminal.print(terminal.colorize("\tSelect WareHouse :\n", 0, true)));
+                    () -> terminal.print(terminal.colorize("\tSelect WareHouse :\n", Colors.PINK, true)));
 
             if (selected[0] == -1) {
                 return;
             }
 
             if (selected[1] == -1) {
-                terminal.previewing("no products:(", 1);
+                terminal.previewing("no products:(", Colors.PINK);
             } else {
                 if (farm.getWareHouse().transferFood(products[selected[1]],
                         farmsLocal.get(selected[0]).getWareHouse())) {
                     terminal.statusMessage(true, "transfered");
                 } else {
-                    terminal.previewing("no free space :(", 1);
+                    terminal.previewing("no free space :(", Colors.RED);
                 }
 
             }

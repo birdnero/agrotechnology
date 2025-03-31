@@ -1,7 +1,9 @@
 package agro.technology.Farms.AnimaFarm;
 
 import java.util.ArrayList;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
+
 import org.springframework.stereotype.Service;
 
 import agro.technology.Farms.IFarmConsoleFactory;
@@ -17,11 +19,11 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
 
     private final AnimalService animalService;
 
-    private final terminal terminal;
+    private final CLI terminal;
 
     private final BarnConsoleService barnConsoleService;
 
-    public AnimalFarmConsoleService(BarnConsoleService barnConsoleService, terminal terminal, AnimalService animalService) {
+    public AnimalFarmConsoleService(BarnConsoleService barnConsoleService, CLI terminal, AnimalService animalService) {
         this.barnConsoleService = barnConsoleService;
         this.terminal = terminal;
         this.animalService = animalService;
@@ -39,7 +41,7 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
 
     @Override
     public String getType() {
-        return "Farm of plants";
+        return "Farm of animals";
     }
 
     @Override
@@ -74,7 +76,7 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
                     options.toArray(),
                     secondOption,
                     null,
-                    () -> terminal.print(terminal.colorize("\tBARN:\n", 0, true)));
+                    () -> terminal.print(terminal.colorize("\tBARN:\n", Colors.PINK, true)));
 
             if (selected[0] == -1) {
                 return;
@@ -83,7 +85,7 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
                 case 0:
 
                     if (selected[1] == -1) {
-                        terminal.previewing("no unough money or room:(", 1);
+                        terminal.previewing("no unough money or room:(", Colors.RED);
                     } else {
                         terminal.statusMessage(barn.addAnimal(selected[1] + 1), "added");
                     }
@@ -96,7 +98,7 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
 
                 case 2:
                     if (selected[1] == -1) {
-                        terminal.previewing("no production yet :(", 1);
+                        terminal.previewing("no production yet :(", Colors.RED);
                     } else {
                         terminal.statusMessage(barn.getProduction(selected[1] + 1, farm.getWareHouse()), "taked");
 
@@ -126,13 +128,13 @@ public class AnimalFarmConsoleService implements IFarmConsoleFactory {
             }
 
             int[] putted = terminal.initOptions(foodTypes, canPutArr, null,
-                    () -> terminal.print(terminal.colorize("\tSELECT FOOD:\n", 0, true)));
+                    () -> terminal.print(terminal.colorize("\tSELECT FOOD:\n", Colors.PINK, true)));
 
             if (putted[0] == -1) {
                 return;
             }
             if (putted[1] == -1) {
-                terminal.previewing("no feed in wareHouse :(", 1);
+                terminal.previewing("no feed in wareHouse :(", Colors.PINK);
             } else {
                 terminal.statusMessage(barn.putFeed(putted[1] + 1, foodTypes[putted[0]], farm.getWareHouse()),
                         "putted");

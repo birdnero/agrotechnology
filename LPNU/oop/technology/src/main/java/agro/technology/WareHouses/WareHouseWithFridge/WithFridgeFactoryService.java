@@ -11,23 +11,24 @@ import org.springframework.stereotype.Service;
 import agro.technology.WareHouses.ISpecificationAction;
 import agro.technology.WareHouses.IWareHouseFactory;
 import agro.technology.WareHouses.WareHouse.WareHouse;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class WithFridgeFactoryService implements IWareHouseFactory, ISpecificationAction {
 
     private final Map<String, Consumer<WareHouseWithFridge>> actionsList;
-    private final terminal terminal;
+    private final CLI terminal;
 
     public void chargeFridge(WareHouseWithFridge wareHouse) {
         if (wareHouse.chargeFridge()) {
-            terminal.previewing("seccefully charged", 2);
+            terminal.previewing("seccefully charged", Colors.GREEN);
         } else {
-            terminal.previewing("no unough money :(", 1);
+            terminal.previewing("no unough money :(", Colors.RED);
         }
     }
 
-    public WithFridgeFactoryService(terminal terminal) {
+    public WithFridgeFactoryService(CLI terminal) {
         this.terminal = terminal;
         HashMap<String, Consumer<WareHouseWithFridge>> actions = new HashMap<>();
 
@@ -50,7 +51,7 @@ public class WithFridgeFactoryService implements IWareHouseFactory, ISpecificati
     public void action(WareHouse wareHouse, String type) {
         Consumer<WareHouseWithFridge> act = this.actionsList.get(type);
         if (act == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", Colors.RED);
         else
             act.accept(((WareHouseWithFridge) wareHouse));
     }

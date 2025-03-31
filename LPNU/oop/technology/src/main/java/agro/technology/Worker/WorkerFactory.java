@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import org.springframework.stereotype.Service;
 
 import agro.technology.Worker.Person.Sex;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 import lombok.Getter;
 
 @Service
@@ -22,9 +22,9 @@ public class WorkerFactory {
     private String[] positions;
     private String[] duties;
 
-    private final terminal terminal;
+    private final CLI terminal;
 
-    public WorkerFactory(terminal terminal) {
+    public WorkerFactory(CLI terminal) {
         this.terminal = terminal;
         try {
             positions = readFile(Path.of("src/main/java/agro/technology/Worker/data/positions.csv"));

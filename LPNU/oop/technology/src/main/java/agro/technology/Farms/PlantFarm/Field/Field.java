@@ -7,7 +7,7 @@ import agro.technology.Budget.BudgetService;
 import agro.technology.Farms.PlantFarm.Field.Plants.PlantService;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.utils.HasReport;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 import lombok.Getter;
 
 import com.google.gson.annotations.Expose;
@@ -31,11 +31,11 @@ public class Field implements HasReport {
     protected double waterLevel;
     
     private PlantService plantService;
-    private terminal terminal;
+    private CLI terminal;
     private BudgetService budgetService;
     
     @Autowired
-    public Field(terminal terminal, PlantService plantService, BudgetService budgetService){
+    public Field(CLI terminal, PlantService plantService, BudgetService budgetService){
         this.terminal = terminal;
         this.plantService = plantService;
         this.budgetService = budgetService;

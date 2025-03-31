@@ -1,0 +1,26 @@
+[
+  {
+    "price": 0,
+    "Products": [
+      "MAth formulas"
+    ],
+    "canEat": [
+      "Coffee"
+    ],
+    "name": "Olena",
+    "life": 0.3,
+    "sellPrice": 50
+  },
+  {
+    "price": 15,
+    "Products": [
+      "Meat"
+    ],
+    "canEat": [
+      "Pears"
+    ],
+    "name": "ikik",
+    "life": 0.1,
+    "sellPrice": 15
+  }
+]

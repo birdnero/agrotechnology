@@ -1,7 +1,7 @@
 package agro.technology.Worker;
 
 import agro.technology.utils.HasReport;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,10 +20,10 @@ public class Worker extends Person implements HasReport {
     @Expose
     protected String workPlace;
 
-    private terminal terminal;
+    private CLI terminal;
 
     @Autowired
-    public void setterminal(terminal terminal){
+    public void setterminal(CLI terminal){
         this.terminal = terminal;
     }
 

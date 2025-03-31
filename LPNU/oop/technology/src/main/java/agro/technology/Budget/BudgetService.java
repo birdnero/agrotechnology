@@ -7,17 +7,23 @@ import java.nio.file.Path;
 
 import org.springframework.stereotype.Service;
 
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
+
 @Service
 public class BudgetService {
 
+    private final CLI terminal;
     private int budget = 0;
 
-    BudgetService() {
+    BudgetService(CLI terminal) {
+        this.terminal = terminal;
         loadBudget();
         // фігня щоб перед виходом (коректним) все збереглося
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             syncBudget();
         }));
+        terminal.topInfoHook(prevText -> printBudget());
     }
 
     /**
@@ -26,7 +32,7 @@ public class BudgetService {
      * @return - повертає оновлений бюджет або -1 якщо грошей недостатньо
      */
     public int updateBudget(int value) {
-        if (budget + value > 0) {
+        if (budget + value >= 0) {
             budget += value;
             syncBudget();
             return budget;
@@ -45,19 +51,28 @@ public class BudgetService {
             updateBudget(Integer.parseInt(budget));
 
         } catch (IOException e) {
-            System.exit(1);
-            // terminal.errorExit("budget reading error");
+            terminal.errorExit("budget reading error");
         }
     }
 
     public void syncBudget() {
         try (FileWriter file = new FileWriter(Path.of("src/main/java/agro/technology/Budget/BUDGET.txt").toFile())) {
-            // TODO change ALL pathes in ALL files
             file.write((getBudget() + ""));
         } catch (IOException e) {
-            System.exit(1);
-            // terminal.errorExit("budget sync error");
+            terminal.errorExit("budget sync error");
         }
+    }
+
+    /**
+     * виводить бюджет бюджет
+     */
+    private String printBudget() {
+        StringBuilder str = new StringBuilder();
+        str.append(terminal.colorize("BUDGET", Colors.BlUE_NEON, true));
+        str.append(": \t\t\t");
+        str.append(terminal.colorize(getBudget() + "$", Colors.YELLOW, true));
+        str.append("\n");
+        return str.toString();
     }
 
 }

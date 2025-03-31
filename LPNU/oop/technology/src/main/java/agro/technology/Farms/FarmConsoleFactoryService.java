@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 import agro.technology.Farms.Farm.Farm;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.Worker.Worker;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 /**
  * <h3>працює отак:</h3>
@@ -25,11 +26,12 @@ import agro.technology.utils.terminal;
 @Service
 public class FarmConsoleFactoryService {
 
-    private final terminal terminal;
+    private final CLI terminal;
     private final Map<String, IFarmConsoleFactory> farms;
 
-    public FarmConsoleFactoryService(List<IFarmConsoleFactory> farms, terminal terminal) {
+    public FarmConsoleFactoryService(List<IFarmConsoleFactory> farms, CLI terminal) {
         HashMap<String, IFarmConsoleFactory> farmMap = new HashMap<>();
+
         for (IFarmConsoleFactory farm : farms)
             farmMap.put(farm.getType(), farm);
         this.farms = farmMap;
@@ -43,8 +45,10 @@ public class FarmConsoleFactoryService {
             ArrayList<Worker> workers) {
         IFarmConsoleFactory farmFactory = farms.get(type);
         if (farmFactory == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", 1);
-        return farmFactory.create(type, location, name, wareHouse, workers);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", Colors.RED);
+        Farm farm = farmFactory.create(type, location, name, wareHouse, workers);
+        farm.initProcess();
+        return farm;
     }
 
     public void specializationAction(Farm farm){

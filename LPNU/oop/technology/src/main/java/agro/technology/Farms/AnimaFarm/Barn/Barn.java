@@ -1,22 +1,20 @@
 package agro.technology.Farms.AnimaFarm.Barn;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import agro.technology.Budget.BudgetService;
 import agro.technology.Farms.AnimaFarm.Barn.Animals.AnimalService;
 import agro.technology.WareHouses.WareHouse.WareHouse;
 import agro.technology.utils.HasReport;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 import lombok.Getter;
 
 import com.google.gson.annotations.Expose;
 
 @Component
 @Getter
-public class Barn implements HasReport{
+public class Barn implements HasReport {
 
-    
     @Expose
     private String type;
     @Expose
@@ -27,24 +25,37 @@ public class Barn implements HasReport{
     protected int feedAmount;
     @Expose
     protected int productionAmount;
-    
-    private terminal terminal;
+
+    private CLI terminal;
     private AnimalService animalService;
     private BudgetService budgetService;
 
-    @Autowired
-    public Barn(terminal terminal, AnimalService animalService, BudgetService budgetService){
-        this.terminal = terminal;
-        this.animalService = animalService;
-        this.budgetService = budgetService;
+    public class BarnException extends RuntimeException {
+        public BarnException() {
+            super("barn not intialized!");
+        }
+    }
+
+    private void checkInitialization() {
+        if (this.type == null)
+            throw new BarnException();
     }
 
     /**
-     * 
-     * @param type - тільки назви класів тварин інтерфейсу Animal.defineType
-     * @param size - максимальна кількість тварин що може там знаходитися
+     * DON'T FORGET TO INFLICT constructor()
      */
-    public Barn(String type, int size) {
+    public Barn(CLI terminal, AnimalService animalService, BudgetService budgetService) {
+        this.terminal = terminal;
+        this.animalService = animalService;
+        this.budgetService = budgetService;
+        this.type = null;
+        this.size = -1;
+    }
+
+    /**
+     * initialization method 
+     */
+    public void constructor(String type, int size) {
         this.type = type;
         this.size = size;
         this.animalsAmount = 0;
@@ -54,8 +65,8 @@ public class Barn implements HasReport{
         new Processes(this);
     }
 
-
     public boolean addAnimal(int amount) {
+        checkInitialization();
         if (amount < 0) {
             return false;
         }
@@ -69,6 +80,7 @@ public class Barn implements HasReport{
     }
 
     public int canAddAnimals() {
+        checkInitialization();
         int budget = budgetService.getBudget();
         if (this.size - this.animalsAmount >= (int) (budget / animalService.getAnimal(type).getPrice())) {
             return (int) (budget / animalService.getAnimal(type).getPrice());
@@ -80,6 +92,7 @@ public class Barn implements HasReport{
      * @return повертає feedAmount
      */
     public boolean putFeed(int amount, String type, WareHouse wareHouse) {
+        checkInitialization();
         if (amount < 0) {
             return false;
         }
@@ -90,6 +103,7 @@ public class Barn implements HasReport{
     }
 
     public int canPutFeed(String type, WareHouse wareHouse) {
+        checkInitialization();
 
         if (this.animalsAmount * 32 - this.feedAmount >= Math.min(wareHouse.checkIfIsFood(type), 0)) {
             return Math.min(wareHouse.checkIfIsFood(type), 50);
@@ -101,6 +115,7 @@ public class Barn implements HasReport{
     }
 
     public boolean getProduction(int amount, WareHouse wareHouse) {
+        checkInitialization();
         if (amount <= productionAmount
                 && wareHouse.getFreeSpace() >= amount * animalService.getAnimal(type).getProducts().length) {
             productionAmount -= amount;
@@ -113,6 +128,7 @@ public class Barn implements HasReport{
     }
 
     public int canGetProduction(WareHouse wareHouse) {
+        checkInitialization();
         int canGetProduct = this.getProductionAmount();
         int dabler = animalService.getAnimal(type).getProducts().length;
         int wareHouseFreeSpace = wareHouse.getFreeSpace();
@@ -124,11 +140,13 @@ public class Barn implements HasReport{
     }
 
     public void process() {
+        checkInitialization();
         new Processes(this);
     }
 
     @Override
     public String report() {
+        checkInitialization();
         StringBuilder str = new StringBuilder();
         str.append(terminal.formatName(animalService.getAnimal(type).getName() + " barn"));
         str.append(terminal.formatDataValue("size", this.size + " m²"));

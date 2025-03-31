@@ -8,7 +8,7 @@ import agro.technology.Budget.BudgetService;
 import agro.technology.Farms.AnimaFarm.Barn.Animals.AnimalService;
 import agro.technology.Farms.PlantFarm.Field.Plants.PlantService;
 import agro.technology.utils.HasReport;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -20,11 +20,11 @@ public class WareHouse implements HasReport {
 
     private AnimalService animalService;
     private PlantService plantService;
-    private terminal terminal;
+    private CLI terminal;
     private BudgetService budgetService;
     
     @Autowired
-    public WareHouse(PlantService plantService, AnimalService animalService, terminal terminal, BudgetService budgetService){
+    public WareHouse(PlantService plantService, AnimalService animalService, CLI terminal, BudgetService budgetService){
         this.plantService = plantService;
         this.animalService = animalService;
         this.terminal = terminal;

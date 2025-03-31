@@ -7,16 +7,17 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import agro.technology.WareHouses.WareHouse.WareHouse;
-import agro.technology.utils.terminal;
+import agro.technology.utils.CLI;
+import agro.technology.utils.CLI.Colors;
 
 @Service
 public class WareHousesFactoryService {
 
-    private terminal terminal;
+    private CLI terminal;
     private Map<String, IWareHouseFactory> wareHouses;
     private Map<String, ISpecificationAction> actions;
 
-    public WareHousesFactoryService(List<IWareHouseFactory> wareHouses, terminal terminal,
+    public WareHousesFactoryService(List<IWareHouseFactory> wareHouses, CLI terminal,
             List<ISpecificationAction> specificationActions) {
 
         this.wareHouses = new java.util.HashMap<>();
@@ -32,7 +33,7 @@ public class WareHousesFactoryService {
     public WareHouse createWareHouse(String type, String location, int size) {
         IWareHouseFactory wareHouseFactory = wareHouses.get(type);
         if (wareHouseFactory == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", Colors.RED);
         return wareHouseFactory.create(type, location, size);
     }
 
@@ -48,14 +49,14 @@ public class WareHousesFactoryService {
     public List<String> getActions(String type) {
         ISpecificationAction action = actions.get(type);
         if (action == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", Colors.RED);
         return action.getActionsList();
     }
 
     public void takeAction(WareHouse wareHouse, String type) {
         ISpecificationAction action = actions.get(type);
         if (action == null)
-            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", 1);
+            terminal.previewing(this.getClass().getSimpleName() + ": undefined type", Colors.RED);
         action.action(wareHouse, type);
         ;
     }
