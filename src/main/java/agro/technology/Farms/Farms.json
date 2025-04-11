@@ -1,0 +1,126 @@
+[
+  {
+    "barn": {
+      "type": "SHI",
+      "size": 1235,
+      "animalsAmount": 0,
+      "feedAmount": 0,
+      "productionAmount": 55
+    },
+    "type": "Animal Farm",
+    "location": "lviv",
+    "name": "shi farm",
+    "wareHouse": {
+      "fridgeWithAccumulator": 9.00000000000001,
+      "type": "WareHouse with fridge",
+      "location": "20 korpus",
+      "size": 1234,
+      "capacity": 89,
+      "freshness": 0.94,
+      "storage": [
+        {
+          "amount": 89,
+          "name": "Olena🌸",
+          "price": 0
+        },
+        {
+          "amount": 0,
+          "name": "stress",
+          "price": 0
+        }
+      ]
+    },
+    "workers": [
+      {
+        "position": "Plant Breeder",
+        "expirience": 6,
+        "salary": 137756,
+        "duty": "Applying fertilizers and pesticides",
+        "workPlace": "shi farm",
+        "birthDay": "13/02/1988",
+        "sex": "MALE",
+        "fullName": "Madison Perez"
+      },
+      {
+        "position": "Soil Scientist",
+        "expirience": 4,
+        "salary": 115540,
+        "duty": "Managing farm operations",
+        "workPlace": "shi farm",
+        "birthDay": "10/09/1989",
+        "sex": "MALE",
+        "fullName": "Lucas Nelson"
+      }
+    ]
+  },
+  {
+    "barn": {
+      "type": "Olena",
+      "size": 222,
+      "animalsAmount": 0,
+      "feedAmount": 0,
+      "productionAmount": 1
+    },
+    "type": "Animal Farm",
+    "location": "Domazir",
+    "name": "Olena`s Farm",
+    "wareHouse": {
+      "type": "WareHouse",
+      "location": "Natalya`s room",
+      "size": 222,
+      "capacity": 108,
+      "freshness": 0.8499999999999999,
+      "storage": [
+        {
+          "amount": 108,
+          "name": "stress",
+          "price": 0
+        }
+      ]
+    },
+    "workers": [
+      {
+        "position": "Livestock Manager",
+        "expirience": 8,
+        "salary": 142521,
+        "duty": "Ensuring livestock health",
+        "workPlace": "Olena`s Farm",
+        "birthDay": "07/05/2000",
+        "sex": "MALE",
+        "fullName": "Aria Price"
+      }
+    ]
+  },
+  {
+    "barn": {
+      "type": "Olena",
+      "size": 2,
+      "animalsAmount": 0,
+      "feedAmount": 0,
+      "productionAmount": 0
+    },
+    "type": "Animal Farm",
+    "location": "asd",
+    "name": "sadasd",
+    "wareHouse": {
+      "type": "WareHouse",
+      "location": "a",
+      "size": 1,
+      "capacity": 0,
+      "freshness": 1.0,
+      "storage": []
+    },
+    "workers": [
+      {
+        "position": "Livestock Manager",
+        "expirience": 6,
+        "salary": 55255,
+        "duty": "Maintaining farm equipment",
+        "workPlace": "sadasd",
+        "birthDay": "07/09/1974",
+        "sex": "MALE",
+        "fullName": "Henry Murphy"
+      }
+    ]
+  }
+]

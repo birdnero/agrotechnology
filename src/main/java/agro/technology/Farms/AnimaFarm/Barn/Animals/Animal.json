@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Olena",
+    "buyPrice": 0,
+    "Products": [
+      "MAth formulas"
+    ],
+    "canEat": [
+      "stress"
+    ],
+    "life": 0.3
+  },
+  {
+    "name": "SHI",
+    "buyPrice": 42,
+    "Products": [
+      "stress"
+    ],
+    "canEat": [
+      "Olena🌸"
+    ],
+    "life": 0.44999999999999996
+  }
+]
