@@ -22,9 +22,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/shop")
 public class SellService {
-
-    private final PauseService pauseService;
-
     private final ProductService productService;
 
     private final RequestHandler requestHandler;
@@ -33,13 +30,11 @@ public class SellService {
     private Gson gson;
     private List<Product> productAnswer = new ArrayList<>();
 
-    public SellService(CLI cli, RequestHandler requestHandler, ProductService productService,
-            PauseService pauseService) {
+    public SellService(CLI cli, RequestHandler requestHandler, ProductService productService) {
         this.terminal = cli;
         this.gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
         this.requestHandler = requestHandler;
         this.productService = productService;
-        this.pauseService = pauseService;
     }
 
     public static class RequestProduct {
@@ -49,8 +44,6 @@ public class SellService {
     @CrossOrigin(origins = "*")
     @PostMapping("/ask")
     public String askAboutProduction(@RequestBody RequestProduct request) throws InterruptedException {
-
-        requestHandler.hotMessageHook("new purchase request");
 
         Supplier<Boolean> requestFn = () -> {
             while (true) {
@@ -71,9 +64,10 @@ public class SellService {
             }
         };
 
-        requestHandler.requestHook(requestFn);
-
-        pauseService.waiting();
+        requestHandler
+                .hotMessageHook("new purchase request")
+                .requestHook(requestFn)
+                .waiting();
 
         terminal.print(terminal.colorize("request handled", Colors.BACKGROUND_GREEN, false));
 

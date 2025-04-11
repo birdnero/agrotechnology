@@ -10,38 +10,47 @@ import agro.technology.utils.CLI.Colors;
 @Service
 public class RequestHandler {
 
-    private final PauseService pauseService;
     private final CLI terminal;
+
+    volatile private boolean onHandle = false;
     private Supplier<Boolean> request;
 
-    public RequestHandler(CLI cli, PauseService pauseService) {
+    public RequestHandler(CLI cli) {
         this.request = null;
         this.terminal = cli;
-        this.pauseService = pauseService;
     }
 
-    public void doRequest() {
+    public RequestHandler doRequest() {
         if (request.get()) {
             requestHook(null);
             hotMessageHook(null);
-            pauseService.resume();
+            onHandle = false;
         }
+        return this;
     }
 
-    public boolean isRequest(){
+    public boolean isRequest() {
         return request != null;
     }
 
-    public void requestHook(Supplier<Boolean> request) {
-        this.request = request;
-        pauseService.pause();
+    public RequestHandler waiting() {
+        while (onHandle)
+            ;
+        return this;
     }
 
-    public void hotMessageHook(String message) {
+    public RequestHandler requestHook(Supplier<Boolean> request) {
+        this.request = request;
+        onHandle = true;
+        return this;
+    }
+
+    public RequestHandler hotMessageHook(String message) {
         if (message != null)
             terminal.topInfoHook("request",
                     () -> terminal.colorize("\n! " + message + " !\n", Colors.BACKGROUND_YELLOW, true));
         else
             terminal.topInfoHook("request", null);
+        return this;
     }
 }
