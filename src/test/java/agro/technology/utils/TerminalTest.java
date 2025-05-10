@@ -5,19 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import agro.technology.utils.CLI.CLIException;
+import agro.technology.utils.CLI.Colors;
 import java.io.IOException;
 import java.util.List;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import agro.technology.utils.CLI.CLIException;
-import agro.technology.utils.CLI.Colors;
-
 @SpringBootTest(args = "--test")
 public class TerminalTest {
-
     private CLITest terminal;
 
     private class CLITest extends CLI {
@@ -42,7 +39,6 @@ public class TerminalTest {
             this.keyList = keyList;
             this.index = 0;
         }
-
     }
 
     @BeforeEach
@@ -56,7 +52,7 @@ public class TerminalTest {
     // standart
     void CLI00() {
         terminal.setKey(List.of(66, 66, 10)); // 0 1 2
-        String[] actionList = { "0", "1", "2", "3" };
+        String[] actionList = {"0", "1", "2", "3"};
         int selected = terminal.initOptions(actionList, null, null);
 
         assertEquals(selected, 2);
@@ -66,7 +62,7 @@ public class TerminalTest {
     // up arrow
     void CLI01() {
         terminal.setKey(List.of(66, 65, 10)); // 0 1 2
-        String[] actionList = { "0", "1", "2", "3" };
+        String[] actionList = {"0", "1", "2", "3"};
         int selected = terminal.initOptions(actionList, null, null);
 
         assertEquals(selected, 0);
@@ -98,7 +94,7 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         assertThrows(NullPointerException.class,
-                () -> terminal.initOptions(null, null, null));
+            () -> terminal.initOptions(null, null, null));
     }
 
     @Test
@@ -106,7 +102,7 @@ public class TerminalTest {
     void CLI04_2() {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
-        assertEquals(terminal.initOptions(new String[] { "sf", null, "dgg" }, null, null), -1);
+        assertEquals(terminal.initOptions(new String[] {"sf", null, "dgg"}, null, null), -1);
     }
 
     @Test
@@ -176,12 +172,12 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 67, 67, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 2, 2 });
+        assertArrayEquals(selected, new int[] {2, 2});
     }
 
     @Test
@@ -190,12 +186,12 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 66, 66, 66, 67, 67, 67, 67, 67, 67, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 3, 3 });
+        assertArrayEquals(selected, new int[] {3, 3});
     }
 
     @Test
@@ -204,12 +200,12 @@ public class TerminalTest {
         terminal.setKey(List.of(67, 67, 67, 66, 66, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 2, 3 });
+        assertArrayEquals(selected, new int[] {2, 3});
     }
 
     @Test
@@ -218,12 +214,12 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 67, 636, 66, 166, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 1 });
+        assertArrayEquals(selected, new int[] {1, 1});
     }
 
     @Test
@@ -232,7 +228,7 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         assertThrows(NullPointerException.class,
-                () -> terminal.initOptions(null, null, new int[] { 0, 1, 32 }, null, null));
+            () -> terminal.initOptions(null, null, new int[] {0, 1, 32}, null, null));
     }
 
     @Test
@@ -241,8 +237,8 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         assertArrayEquals(
-                terminal.initOptions(new String[] { "sf", null, "dgg" }, null, new int[] { 1, 0, 2 }, null, null),
-                new int[] { -1, -1 });
+            terminal.initOptions(new String[] {"sf", null, "dgg"}, null, new int[] {1, 0, 2}, null, null),
+            new int[] {-1, -1});
     }
 
     @Test
@@ -251,9 +247,9 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         assertArrayEquals(
-                terminal.initOptions(new String[] { "sf", null, "dgg" }, new String[] { "sf", null, "dgg" },
-                        new int[] { 0, 1, 2 }, null, null),
-                new int[] { -1, -1 });
+            terminal.initOptions(new String[] {"sf", null, "dgg"}, new String[] {"sf", null, "dgg"},
+                new int[] {0, 1, 2}, null, null),
+            new int[] {-1, -1});
     }
 
     @Test
@@ -262,13 +258,12 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         int[] test = terminal.initOptions(
-                (Object[]) (List.of("0", "1").toArray()),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            (Object[]) (List.of("0", "1").toArray()),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(test, new int[] { 1, 0 });
-
+        assertArrayEquals(test, new int[] {1, 0});
     }
 
     // ! не знаю і не уявляю як зробити щоб працювали (всі тести після них не
@@ -307,12 +302,12 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 67, 636, 66, 166, 127, 13));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
+        assertArrayEquals(selected, new int[] {-1, -1});
     }
 
     @Test
@@ -321,12 +316,12 @@ public class TerminalTest {
         terminal.setKey(List.of(10));
 
         int[] selected = terminal.initOptions(
-                new Integer[] {},
-                new Integer[] {},
-                new int[] { 0, 1, 2, 3 },
-                null, null);
+            new Integer[] {},
+            new Integer[] {},
+            new int[] {0, 1, 2, 3},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
+        assertArrayEquals(selected, new int[] {-1, -1});
     }
 
     @Test
@@ -335,7 +330,7 @@ public class TerminalTest {
         terminal.setKey(List.of(10));
 
         assertThrows(NullPointerException.class,
-                () -> terminal.initOptions(null, List.of(0, 1, 2, 3).toArray(), new int[] { 0, 1, 32 }, null, null));
+            () -> terminal.initOptions(null, List.of(0, 1, 2, 3).toArray(), new int[] {0, 1, 32}, null, null));
     }
 
     @Test
@@ -343,10 +338,9 @@ public class TerminalTest {
     void CLI21() {
         terminal.setKey(List.of(10));
 
-        int[] selected = terminal.initOptions(List.of(0, 1, 2, 3).toArray(), null, new int[] { 0, 1, 32 }, null, null);
+        int[] selected = terminal.initOptions(List.of(0, 1, 2, 3).toArray(), null, new int[] {0, 1, 32}, null, null);
 
-        assertArrayEquals(selected, new int[] { 0, -1 });
-
+        assertArrayEquals(selected, new int[] {0, -1});
     }
 
     @Test
@@ -355,13 +349,12 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 67, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 32 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 32},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 2, -1 });
-
+        assertArrayEquals(selected, new int[] {2, -1});
     }
 
     @Test
@@ -370,13 +363,12 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 65, 67, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 32 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 32},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 1 });
-
+        assertArrayEquals(selected, new int[] {1, 1});
     }
 
     @Test
@@ -385,25 +377,24 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 67, 68, 65, 67, 68, 10));
 
         int[] selected = terminal.initOptions(
-                List.of(0, 1, 2, 3).toArray(),
-                List.of(0, 1, 2, 3).toArray(),
-                new int[] { 0, 1, 32 },
-                null, null);
+            List.of(0, 1, 2, 3).toArray(),
+            List.of(0, 1, 2, 3).toArray(),
+            new int[] {0, 1, 32},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 0 });
-
+        assertArrayEquals(selected, new int[] {1, 0});
     }
 
     // ? <--initOptions full-->
 
-    private Integer[] opt1 = new Integer[] { 0, 1, 2, 3, 4, 5 };
+    private Integer[] opt1 = new Integer[] {0, 1, 2, 3, 4, 5};
     private String[][] opt2 = new String[][] {
-            { "1", "2", "3" },
-            { "2.1", "2.2", "2.3" },
-            {},
-            null,
-            { null, "2", "3" },
-            { "2.1", "2.2", "2.3" },
+        {"1", "2", "3"},
+        {"2.1", "2.2", "2.3"},
+        {},
+        null,
+        {null, "2", "3"},
+        {"2.1", "2.2", "2.3"},
     };
 
     @Test
@@ -412,9 +403,9 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 67, 10));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 1 });
+        assertArrayEquals(selected, new int[] {1, 1});
     }
 
     @Test
@@ -423,9 +414,9 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 66, 66, 66, 66, 66, 67, 67, 67, 67, 67, 67, 10));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 5, 2 });
+        assertArrayEquals(selected, new int[] {5, 2});
     }
 
     @Test
@@ -434,9 +425,9 @@ public class TerminalTest {
         terminal.setKey(List.of(67, 67, 67, 66, 10));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 2 });
+        assertArrayEquals(selected, new int[] {1, 2});
     }
 
     @Test
@@ -445,9 +436,9 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 67, 636, 66, 166, 10));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 1 });
+        assertArrayEquals(selected, new int[] {1, 1});
     }
 
     @Test
@@ -456,7 +447,7 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         assertThrows(CLIException.class,
-                () -> terminal.initOptions(null, null, null, null));
+            () -> terminal.initOptions(null, null, null, null));
     }
 
     @Test
@@ -465,12 +456,11 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 636, 66, 166, 10));
 
         int[] test = terminal.initOptions(
-                (Object[]) (List.of(opt1).toArray()),
-                opt2,
-                null, null);
+            (Object[]) (List.of(opt1).toArray()),
+            opt2,
+            null, null);
 
-        assertArrayEquals(test, new int[] { 1, 0 });
-
+        assertArrayEquals(test, new int[] {1, 0});
     }
 
     // ! не знаю і не уявляю як зробити щоб працювали (всі тести після них не
@@ -509,9 +499,9 @@ public class TerminalTest {
         terminal.setKey(List.of(6, 67, 636, 66, 166, 127, 13));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
+        assertArrayEquals(selected, new int[] {-1, -1});
     }
 
     @Test
@@ -520,11 +510,11 @@ public class TerminalTest {
         terminal.setKey(List.of(10));
 
         int[] selected = terminal.initOptions(
-                new Integer[] {},
-                new String[][] {},
-                null, null);
+            new Integer[] {},
+            new String[][] {},
+            null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
+        assertArrayEquals(selected, new int[] {-1, -1});
     }
 
     @Test
@@ -533,7 +523,7 @@ public class TerminalTest {
         terminal.setKey(List.of(10));
 
         assertThrows(CLIException.class,
-                () -> terminal.initOptions(null, opt2, null, null));
+            () -> terminal.initOptions(null, opt2, null, null));
     }
 
     @Test
@@ -542,7 +532,7 @@ public class TerminalTest {
         terminal.setKey(List.of(10));
 
         assertThrows(CLIException.class,
-                () -> terminal.initOptions(opt1, null, null, null));
+            () -> terminal.initOptions(opt1, null, null, null));
     }
 
     @Test
@@ -550,11 +540,9 @@ public class TerminalTest {
     void CLI37() {
         terminal.setKey(List.of(66, 66, 67, 10));
 
-        int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+        int[] selected = terminal.initOptions(opt1, opt2, null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
-
+        assertArrayEquals(selected, new int[] {2, -1});
     }
 
     @Test
@@ -562,11 +550,9 @@ public class TerminalTest {
     void CLI38() {
         terminal.setKey(List.of(66, 66, 66, 66, 10));
 
-        int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+        int[] selected = terminal.initOptions(opt1, opt2, null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
-
+        assertArrayEquals(selected, new int[] { 4, -1});
     }
 
     @Test
@@ -574,11 +560,10 @@ public class TerminalTest {
     void CLI38_2() {
         terminal.setKey(List.of(66, 66, 67, 10));
 
-        int[] selected = terminal.initOptions(new String[] { "dfg", "gfhgf", null, "gfh", null, null }, opt2,
-                null, null);
+        int[] selected = terminal.initOptions(new String[] {"dfg", "gfhgf", null, "gfh", null, null}, opt2,
+            null, null);
 
-        assertArrayEquals(selected, new int[] { -1, -1 });
-
+        assertArrayEquals(selected, new int[] {-1, -1});
     }
 
     @Test
@@ -587,10 +572,9 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 65, 67, 10));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 1 });
-
+        assertArrayEquals(selected, new int[] {1, 1});
     }
 
     @Test
@@ -599,10 +583,9 @@ public class TerminalTest {
         terminal.setKey(List.of(66, 66, 67, 68, 65, 67, 68, 10));
 
         int[] selected = terminal.initOptions(opt1, opt2,
-                null, null);
+            null, null);
 
-        assertArrayEquals(selected, new int[] { 1, 0 });
-
+        assertArrayEquals(selected, new int[] {1, 0});
     }
 
     // ? <--ELSE-->
@@ -644,12 +627,12 @@ public class TerminalTest {
     }
 
     @Test
-    void optionsLabel01(){
+    void optionsLabel01() {
         assertNotEquals(terminal.optionsLabel("test"), null);
     }
 
     @Test
-    void optionsLabel02(){
+    void optionsLabel02() {
         assertEquals(terminal.optionsLabel(null), terminal.optionsLabel("--?--"));
     }
 }

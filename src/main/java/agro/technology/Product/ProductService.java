@@ -1,22 +1,18 @@
 package agro.technology.Product;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
-import com.google.gson.JsonObject;
-
 import agro.technology.Farms.Farm;
 import agro.technology.Farms.FarmService;
 import agro.technology.Product.Item.ItemsService;
 import agro.technology.utils.CLI;
+import com.google.gson.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ProductService {
-
     private final FarmService farmService;
 
     private final ItemsService itemsService;
@@ -29,37 +25,42 @@ public class ProductService {
     }
 
     public Product create(String name, int amount) {
+        if (name == null || name.equals("")) return null;
         Product product = new Product(name, Math.max(0, amount), 0);
         return product;
     }
 
     public void add(Product product, int amount) {
-        if (amount > 0)
+        if (amount > 0 && product != null)
             product.amount += amount;
     }
 
     public boolean substract(Product product, int amount) {
-        if (amount > product.getAmount() || amount < 0)
+        if (product == null || amount > product.getAmount() || amount < 0)
             return false;
         product.amount -= amount;
         return true;
     }
 
     public boolean updateAmount(Product product, Function<Integer, Integer> updater) {
-        int value = updater.apply(product.getAmount());
-        if (value < 0)
+        if (product == null) return false;
+        Integer value = updater.apply(product.getAmount());
+        if (value == null || value < 0)
             return false;
         product.amount = value;
         return true;
     }
 
+    // розбиває продукт на два лишаючи в першому product.amount - amount
     public Product divideProduct(Product product, int amount) {
+        if(product == null) return null;
         if (substract(product, amount))
-            return create(product.getName(), 0);
-        return create(product.getName(), amount);
+            return create(product.getName(), amount);
+        return create(product.getName(), 0);
     }
 
     public String report(Product product) {
+        if (product == null) return null;
         StringBuilder str = new StringBuilder();
         str.append(terminal.formatName("product: " + product.getName()));
         str.append(terminal.formatDataValue("amount", product.getAmount()));
